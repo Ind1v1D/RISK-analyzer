@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { useI18n } from '../i18n/I18nContext.jsx'
 
 const ACCEPTED = ['.pdf', '.docx', '.txt', '.md']
 const MAX_BYTES = 10 * 1024 * 1024 // matches the backend limit
@@ -11,6 +12,7 @@ const MAX_BYTES = 10 * 1024 * 1024 // matches the backend limit
  * A circular accent submit button is docked to the card's bottom-right corner.
  */
 export default function InputCard({ onSubmit }) {
+  const { t } = useI18n()
   const [mode, setMode] = useState('paste') // 'paste' | 'upload'
   const [text, setText] = useState('')
   const [file, setFile] = useState(null)
@@ -26,11 +28,11 @@ export default function InputCard({ onSubmit }) {
     if (!candidate) return
     const ext = `.${candidate.name.split('.').pop()}`.toLowerCase()
     if (!ACCEPTED.includes(ext)) {
-      setLocalError('Unsupported file — please use a PDF, DOCX, or TXT file.')
+      setLocalError(t('input.errUnsupported'))
       return
     }
     if (candidate.size > MAX_BYTES) {
-      setLocalError('That file is over 10 MB — please upload a smaller one.')
+      setLocalError(t('input.errTooLarge'))
       return
     }
     setFile(candidate)
@@ -47,7 +49,7 @@ export default function InputCard({ onSubmit }) {
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Paste your contract or upload a file…"
+          placeholder={t('input.placeholder')}
           spellCheck={false}
         />
       ) : (
@@ -77,7 +79,8 @@ export default function InputCard({ onSubmit }) {
               {file.name}
               <button
                 className="file-chip__x"
-                title="Remove file"
+                title={t('input.removeFile')}
+                aria-label={t('input.removeFile')}
                 onClick={(e) => {
                   e.stopPropagation()
                   setFile(null)
@@ -88,8 +91,8 @@ export default function InputCard({ onSubmit }) {
             </span>
           ) : (
             <>
-              <strong>Drag &amp; drop your contract here</strong>
-              <span>or click to browse — PDF, DOCX, or TXT</span>
+              <strong>{t('input.dropTitle')}</strong>
+              <span>{t('input.dropSub')}</span>
             </>
           )}
         </div>
@@ -101,13 +104,13 @@ export default function InputCard({ onSubmit }) {
             className={`chip${mode === 'upload' ? ' chip--active' : ''}`}
             onClick={() => setMode('upload')}
           >
-            📎 Upload File
+            {t('input.upload')}
           </button>
           <button
             className={`chip${mode === 'paste' ? ' chip--active' : ''}`}
             onClick={() => setMode('paste')}
           >
-            ✎ Paste Text
+            {t('input.paste')}
           </button>
         </div>
 
@@ -115,8 +118,8 @@ export default function InputCard({ onSubmit }) {
           className="submit-btn"
           onClick={submit}
           disabled={!canSubmit}
-          title="Analyze contract"
-          aria-label="Analyze contract"
+          title={t('input.submit')}
+          aria-label={t('input.submit')}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path

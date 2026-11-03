@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { locateFlags } from '../lib/spans.js'
+import { useI18n } from '../i18n/I18nContext.jsx'
 
 /**
  * Renders the original contract text with color-coded <mark> highlights around
@@ -7,6 +8,7 @@ import { locateFlags } from '../lib/spans.js'
  * the matching flag in the side panel.
  */
 export default function HighlightedText({ fullText, flags, activeIndex, onSelect }) {
+  const { t } = useI18n()
   const spans = useMemo(() => locateFlags(fullText, flags), [fullText, flags])
 
   const nodes = []
@@ -23,7 +25,7 @@ export default function HighlightedText({ fullText, flags, activeIndex, onSelect
           activeIndex === span.index ? ' mark--active' : ''
         }`}
         onClick={() => onSelect(span.index, 'mark')}
-        title={`${span.flag.risk_level} risk — click to view explanation`}
+        title={t('mark.title', { risk: t(`risk.${span.flag.risk_level.toLowerCase()}`) })}
       >
         {fullText.slice(span.start, span.end)}
       </mark>,

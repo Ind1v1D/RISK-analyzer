@@ -46,6 +46,10 @@ highlighted inline and explained in plain language.
   non-legal language (hedged, never claims certainty).
 - 🖍️ **Results view**: the original text with color-coded highlights, plus a scroll-linked
   side panel with a plain-language explanation for every flag.
+- 🌍 **Three interface languages**: English, Русский, Қазақша. Switch in **Settings** (⚙️ in the navbar).
+  The AI's explanations and the error messages are written in the selected language too.
+- 🌗 **Light / dark theme**: one-click toggle (☀️/🌙 in the navbar). Follows your OS until you choose;
+  your choice is remembered.
 - 🛡️ **Persistent disclaimer** on every screen.
 - 🔒 **No persistence**: documents are processed in memory for the duration of the request only.
 
@@ -157,7 +161,9 @@ so no CORS configuration is needed in development.
 2. Wait a few seconds while the analysis runs (the loading screen shows progress text).
 3. On the results screen, click any **highlight** or **panel entry**. The other column
    scrolls to the matching item.
-4. No contract at hand? Click **See Example Analysis** to run the bundled sample
+4. Use the **☀️/🌙** button to switch between light and dark theme, and **⚙️ Settings** to change the
+   interface language (English, Русский, Қазақша). Both choices are saved in your browser.
+5. No contract at hand? Click **See Example Analysis** to run the bundled sample
    (`samples/freelance-agreement.txt`, a freelance agreement with planted risky clauses).
    Handy for demos.
 
@@ -192,11 +198,11 @@ upload/paste  →  extract text  →  Gemini call  →  validate JSON  →  rend
 
 | Method | Route          | Body                                           | Response                                                           |
 | ------ | -------------- | ---------------------------------------------- | ------------------------------------------------------------------ |
-| `POST` | `/api/analyze` | multipart: `file` (PDF/DOCX/TXT) **or** `text` | `{ full_text, flags: [{ clause_text, risk_level, explanation }] }` |
-| `GET`  | `/api/sample`  | none                                           | `{ text }` (demo contract)                                         |
+| `POST` | `/api/analyze` | multipart: `file` (PDF/DOCX/TXT) **or** `text`, optional `lang` (`en` \| `ru` \| `kk`, default `en`) | `{ full_text, flags: [{ clause_text, risk_level, explanation }] }` |
+| `GET`  | `/api/sample`  | optional query `?lang=en\|ru\|kk`              | `{ text }` (demo contract)                                         |
 | `GET`  | `/api/health`  | none                                           | `{ status: "ok" }`                                                 |
 
-Errors return `{ "detail": "..." }` with a user-readable message.
+Errors return `{ "detail": "..." }` with a user-readable message in the requested `lang`.
 
 **Example request**
 
@@ -215,22 +221,46 @@ RISK-analyzer/
 │   ├── main.py          # FastAPI app + routes (pipeline steps 1 & 5)
 │   ├── extraction.py    # PDF/DOCX/TXT → plain text (step 2)
 │   ├── analysis.py      # Gemini call + validation (steps 3-4)
-│   ├── prompts.py       # System prompt + JSON output schema
+│   ├── prompts.py       # System prompt (+ output-language rule) + JSON output schema
+│   ├── messages.py      # User-facing error messages in en / ru / kk
 │   ├── requirements.txt
 │   └── .env.example     # copy to .env, add GEMINI_API_KEY
 ├── frontend/
 │   ├── index.html       # fonts (Montserrat + Inter)
 │   ├── vite.config.js   # dev proxy /api → :8000
+│   ├── scripts/check-i18n.mjs  # verifies all languages have the same keys
 │   └── src/
 │       ├── App.jsx      # screen flow: landing → loading → results
-│       ├── api.js       # fetch wrappers
+│       ├── api.js       # fetch wrappers (send the UI language to the backend)
+│       ├── i18n/        # translations.js (en / ru / kk) + I18nContext (t(), setLang)
+│       ├── theme/       # ThemeContext (light / dark)
 │       ├── lib/spans.js # locate flagged clauses for highlighting
 │       ├── components/  # Navbar, Hero, InputCard, LoadingState,
-│       │                # Results, HighlightedText, FlagPanel, …
+│       │                # Results, HighlightedText, FlagPanel,
+│       │                # SettingsModal, HowItWorksModal, …
 │       └── styles/      # global.css, Hero.css, Results.css
 ├── samples/             # demo contract with planted risky clauses
 └── README.md
 ```
+
+---
+
+## Languages and themes
+
+- **Language**: stored in `localStorage` (`clausecheck.lang`); on first visit it is taken from the browser
+  language (Russian / Kazakh / otherwise English). The frontend sends it as `lang` with every request,
+  and the backend uses it for the Gemini prompt (explanations only; the quoted clause text always stays
+  verbatim) and for error messages.
+- **Theme**: stored as `clausecheck.theme`; colors are CSS variables in `frontend/src/styles/global.css`
+  (`:root` for light, `:root[data-theme='dark']` for dark).
+
+**Adding another language**
+
+1. Add `{ code: 'xx', label: 'Native name' }` to `LANGUAGES` and a full copy of the `en` block to
+   `frontend/src/i18n/translations.js`.
+2. Add the code to `SUPPORTED_LANGS` / `LANGUAGE_NAMES` and a translation for each message in
+   `backend/messages.py`.
+3. Run `npm run check:i18n` in `frontend/` to make sure no key is missing.
 
 ---
 

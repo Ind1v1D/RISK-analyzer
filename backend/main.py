@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from analysis import AnalysisError, analyze_contract
 from extraction import ExtractionError, extract_text
+from messages import msg, normalize_lang
 
 MAX_FILE_BYTES = 10 * 1024 * 1024  # 10 MB
 MAX_CHARS = 200_000  # generous single-call limit (~50k tokens)
@@ -35,10 +36,10 @@ def health() -> dict:
 
 
 @app.get("/api/sample")
-def sample() -> dict:
+def sample(lang: str = "en") -> dict:
     """The demo contract, for the 'See Example Analysis' button."""
     if not SAMPLE_PATH.exists():
-        raise HTTPException(404, "Sample contract not found.")
+        raise HTTPException(404, msg("sample_missing", normalize_lang(lang)))
     return {"text": SAMPLE_PATH.read_text(encoding="utf-8")}
 
 
@@ -46,31 +47,32 @@ def sample() -> dict:
 async def analyze(
     file: UploadFile | None = File(default=None),
     text: str | None = Form(default=None),
+    lang: str = Form(default="en"),  # UI language: en / ru / kk
 ):
+    lang = normalize_lang(lang)
+
     # --- Step 1: get plain text from either the upload or the paste --------
     if file is not None and file.filename:
         content = await file.read()
         if len(content) > MAX_FILE_BYTES:
-            raise HTTPException(413, "That file is over 10 MB — please upload a smaller one.")
+            raise HTTPException(413, msg("file_too_large", lang))
         try:
             full_text = extract_text(file.filename, content)
         except ExtractionError as exc:
-            raise HTTPException(400, str(exc)) from exc
+            raise HTTPException(400, msg(exc.key, lang, **exc.params)) from exc
     elif text and text.strip():
         full_text = text.strip()
     else:
-        raise HTTPException(400, "Provide a file or paste some contract text first.")
+        raise HTTPException(400, msg("no_input", lang))
 
     if len(full_text) > MAX_CHARS:
         raise HTTPException(
-            413,
-            f"That document is too long for this MVP ({len(full_text):,} characters; "
-            f"limit {MAX_CHARS:,}). Try a shorter document.",
+            413, msg("too_long", lang, length=len(full_text), limit=MAX_CHARS)
         )
 
     # --- Steps 3-4: LLM call + validation (see analysis.py) ---------------
     try:
-        flags = analyze_contract(full_text)
+        flags = analyze_contract(full_text, lang)
     except AnalysisError as exc:
         raise HTTPException(502, str(exc)) from exc
 

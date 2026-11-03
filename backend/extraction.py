@@ -10,11 +10,23 @@ show the user (FastAPI turns it into a 400 response).
 
 from io import BytesIO
 
+from messages import msg
+
 MIN_TEXT_LENGTH = 50  # below this we assume the upload had no usable text
 
 
 class ExtractionError(Exception):
-    """Raised when usable text cannot be extracted from the upload."""
+    """Raised when usable text cannot be extracted from the upload.
+
+    Carries a message `key` (+ params) instead of a finished sentence so the
+    API layer can translate it into the user's language (see messages.py).
+    `str(exc)` is the English text, handy for logs.
+    """
+
+    def __init__(self, key: str, **params):
+        self.key = key
+        self.params = params
+        super().__init__(msg(key, "en", **params))
 
 
 def extract_text(filename: str, content: bytes) -> str:
@@ -30,17 +42,12 @@ def extract_text(filename: str, content: bytes) -> str:
     elif ext in ("txt", "text", "md"):
         text = _decode(content)
     else:
-        raise ExtractionError(
-            f"Unsupported file type '.{ext or '?'}' — please upload a PDF, DOCX, or TXT file."
-        )
+        raise ExtractionError("unsupported_type", ext=ext or "?")
 
     text = _clean(text)
     if len(text) < MIN_TEXT_LENGTH:
         # Almost always a scanned/image-only PDF or an empty document.
-        raise ExtractionError(
-            "We couldn't read any text from that file. If it's a scanned or "
-            "image-based document, try pasting the text instead."
-        )
+        raise ExtractionError("no_text")
     return text
 
 
@@ -55,13 +62,10 @@ def _from_pdf(content: bytes) -> str:
     except ExtractionError:
         raise
     except Exception as exc:
-        raise ExtractionError(
-            f"We couldn't read that PDF ({exc.__class__.__name__}). "
-            "Try re-saving it, or paste the text instead."
-        ) from exc
+        raise ExtractionError("pdf_unreadable", error=exc.__class__.__name__) from exc
 
     if not pages:
-        raise ExtractionError("That PDF appears to have no readable pages.")
+        raise ExtractionError("pdf_no_pages")
     return "\n\n".join(pages)
 
 
@@ -71,10 +75,7 @@ def _from_docx(content: bytes) -> str:
     try:
         doc = Document(BytesIO(content))
     except Exception as exc:
-        raise ExtractionError(
-            f"We couldn't read that DOCX file ({exc.__class__.__name__}). "
-            "Try re-saving it, or paste the text instead."
-        ) from exc
+        raise ExtractionError("docx_unreadable", error=exc.__class__.__name__) from exc
 
     parts: list[str] = [p.text for p in doc.paragraphs if p.text.strip()]
     # Include table cells — fee/payment tables often live in tables.
@@ -92,7 +93,7 @@ def _decode(content: bytes) -> str:
             return content.decode(encoding)
         except UnicodeDecodeError:
             continue
-    raise ExtractionError("That text file uses an encoding we couldn't read.")
+    raise ExtractionError("bad_encoding")
 
 
 def _clean(text: str) -> str:

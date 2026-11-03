@@ -5,23 +5,103 @@
 ------------------------------------------------------------------- */
 
 :root {
+  color-scheme: light;
+
   --ink: #0f172a;
   --ink-soft: #64748b;
+  --ink-body: #334155;
+  --ink-doc: #1e293b;
   --line: #e2e8f0;
+  --line-soft: #f1f5f9;
   --card: #ffffff;
+  --surface-alt: #f8fafc;
+  --glass: rgba(255, 255, 255, 0.75);
+  --placeholder: #94a3b8;
+  --dashed: #cbd5e1;
+  --disabled-bg: #cbd5e1;
+  --backdrop: rgba(15, 23, 42, 0.35);
+
   --accent: #2563eb;
+  --accent-text: #2563eb;
   --accent-soft: #dbeafe;
+  --accent-tint: rgba(37, 99, 235, 0.15);
+  --accent-border: #bfdbfe;
+  --dropzone-over: #f8fbff;
 
   --risk-high-fg: #b91c1c;
   --risk-high-bg: #fef2f2;
+  --risk-high-border: #fecaca;
   --risk-med-fg: #b45309;
   --risk-med-bg: #fffbeb;
   --risk-low-fg: #15803d;
   --risk-low-bg: #f0fdf4;
 
+  --mark-high-bg: rgba(254, 226, 226, 0.95);
+  --mark-med-bg: rgba(254, 243, 199, 0.95);
+  --mark-low-bg: rgba(209, 250, 229, 0.95);
+
   --radius-card: 28px;
   --radius-pill: 999px;
   --shadow-card: 0 10px 40px rgba(15, 23, 42, 0.07);
+  --shadow-modal: 0 24px 80px rgba(15, 23, 42, 0.25);
+
+  /* Page background: soft, atmospheric blue-to-white gradient */
+  --bg-base: #ffffff;
+  --bg-image:
+    radial-gradient(60rem 40rem at 12% -10%, rgba(147, 197, 253, 0.45), transparent 60%),
+    radial-gradient(50rem 35rem at 88% -5%, rgba(191, 219, 254, 0.5), transparent 55%),
+    radial-gradient(70rem 50rem at 50% 115%, rgba(219, 234, 254, 0.65), transparent 60%),
+    linear-gradient(180deg, #f2f7ff 0%, #ffffff 55%);
+  --grid-line: var(--grid-line);
+}
+
+/* Dark theme — set on <html data-theme="dark"> by ThemeContext / index.html */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --ink: #e8eefc;
+  --ink-soft: #93a1ba;
+  --ink-body: #cbd5e1;
+  --ink-doc: #dbe4f3;
+  --line: #26324a;
+  --line-soft: #1b2538;
+  --card: #111a2e;
+  --surface-alt: #172238;
+  --glass: rgba(23, 34, 56, 0.75);
+  --placeholder: #8190ab;
+  --dashed: #3a4a68;
+  --disabled-bg: #2a3650;
+  --backdrop: rgba(2, 6, 15, 0.65);
+
+  --accent: #2563eb;
+  --accent-text: #8ab4ff;
+  --accent-soft: rgba(59, 130, 246, 0.2);
+  --accent-tint: rgba(96, 165, 250, 0.25);
+  --accent-border: #35508a;
+  --dropzone-over: rgba(59, 130, 246, 0.09);
+
+  --risk-high-fg: #fca5a5;
+  --risk-high-bg: rgba(239, 68, 68, 0.15);
+  --risk-high-border: rgba(239, 68, 68, 0.35);
+  --risk-med-fg: #fcd34d;
+  --risk-med-bg: rgba(245, 158, 11, 0.15);
+  --risk-low-fg: #86efac;
+  --risk-low-bg: rgba(16, 185, 129, 0.15);
+
+  --mark-high-bg: rgba(239, 68, 68, 0.3);
+  --mark-med-bg: rgba(245, 158, 11, 0.28);
+  --mark-low-bg: rgba(16, 185, 129, 0.26);
+
+  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.45);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.6);
+
+  --bg-base: #0a0f1c;
+  --bg-image:
+    radial-gradient(60rem 40rem at 12% -10%, rgba(37, 99, 235, 0.22), transparent 60%),
+    radial-gradient(50rem 35rem at 88% -5%, rgba(79, 70, 229, 0.16), transparent 55%),
+    radial-gradient(70rem 50rem at 50% 115%, rgba(30, 64, 175, 0.2), transparent 60%),
+    linear-gradient(180deg, #0c1326 0%, #0a0f1c 55%);
+  --grid-line: rgba(148, 163, 184, 0.07);
 }
 
 * {
@@ -38,13 +118,9 @@ body {
   min-height: 100vh;
   color: var(--ink);
   font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  /* Soft, atmospheric blue-to-white gradient (cloud-like, slightly blurred look) */
-  background-color: #ffffff;
-  background-image:
-    radial-gradient(60rem 40rem at 12% -10%, rgba(147, 197, 253, 0.45), transparent 60%),
-    radial-gradient(50rem 35rem at 88% -5%, rgba(191, 219, 254, 0.5), transparent 55%),
-    radial-gradient(70rem 50rem at 50% 115%, rgba(219, 234, 254, 0.65), transparent 60%),
-    linear-gradient(180deg, #f2f7ff 0%, #ffffff 55%);
+  /* Gradient comes from --bg-image so it can differ per theme */
+  background-color: var(--bg-base);
+  background-image: var(--bg-image);
   background-attachment: fixed;
 }
 
@@ -56,8 +132,8 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background-image:
-    linear-gradient(rgba(15, 23, 42, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 23, 42, 0.045) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 48px 48px;
   -webkit-mask-image: radial-gradient(ellipse at 50% 25%, black 30%, transparent 85%);
   mask-image: radial-gradient(ellipse at 50% 25%, black 30%, transparent 85%);
@@ -130,7 +206,7 @@ button {
 }
 
 .navbar__link:hover:not(:disabled) {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .navbar__link:disabled {
@@ -142,7 +218,7 @@ button {
 
 .chip {
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--glass);
   color: var(--ink-soft);
   border-radius: var(--radius-pill);
   padding: 8px 16px;
@@ -154,7 +230,7 @@ button {
 }
 
 .chip:hover {
-  border-color: #bfdbfe;
+  border-color: var(--accent-border);
   color: var(--ink);
 }
 
@@ -170,7 +246,7 @@ button {
 
 .pill-btn {
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--glass);
   color: var(--ink);
   border-radius: var(--radius-pill);
   padding: 10px 20px;
@@ -180,7 +256,7 @@ button {
 
 .pill-btn:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .btn-primary {
@@ -213,7 +289,7 @@ button {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.35);
+  background: var(--backdrop);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -223,12 +299,13 @@ button {
 }
 
 .modal {
-  background: #ffffff;
+  background: var(--card);
+  border: 1px solid var(--line);
   border-radius: 24px;
   max-width: 560px;
   width: 100%;
   padding: 32px;
-  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.25);
+  box-shadow: var(--shadow-modal);
 }
 
 .modal__title {
@@ -244,7 +321,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  color: #334155;
+  color: var(--ink-body);
   font-size: 14.5px;
   line-height: 1.6;
 }
@@ -253,7 +330,7 @@ button {
   margin: 20px 0 0;
   font-size: 13px;
   color: var(--ink-soft);
-  background: #f8fafc;
+  background: var(--surface-alt);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 12px 14px;
@@ -264,4 +341,113 @@ button {
   margin-top: 20px;
   display: block;
   margin-left: auto;
+}
+
+/* ------------------- Navbar actions (theme + settings) ------------------- */
+
+.navbar__links {
+  align-items: center;
+}
+
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 4px;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transition: color 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.icon-btn:hover {
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.icon-btn:active {
+  transform: scale(0.94);
+}
+
+:where(button, [role='radio']):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ------------------------------ Settings modal ------------------------------ */
+
+.modal {
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.modal__section {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+.lang-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 13px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 15px;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.lang-option:hover {
+  border-color: var(--accent);
+}
+
+.lang-option--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 500;
+}
+
+.modal__hint {
+  margin: 14px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* -------------------------------- Responsive -------------------------------- */
+
+@media (max-width: 640px) {
+  .navbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .navbar__links {
+    gap: 14px;
+    flex-wrap: wrap;
+  }
 }

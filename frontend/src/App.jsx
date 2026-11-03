@@ -4,53 +4,65 @@ import Hero from './components/Hero.jsx'
 import Results from './components/Results.jsx'
 import Disclaimer from './components/Disclaimer.jsx'
 import HowItWorksModal from './components/HowItWorksModal.jsx'
+import SettingsModal from './components/SettingsModal.jsx'
 import { analyzeContract, fetchSample } from './api.js'
+import { useI18n } from './i18n/I18nContext.jsx'
 
 /**
  * App shell + screen flow:  landing (upload)  ->  loading  ->  results
  * Errors bounce back to the landing screen and display inside the hero card.
  */
 export default function App() {
+  const { t, lang } = useI18n()
   const [screen, setScreen] = useState('landing') // 'landing' | 'loading' | 'results'
   const [result, setResult] = useState(null)
-  const [error, setError] = useState('')
+  // Stored as an object (not a string) so the message is translated at render
+  // time and follows the language if it is changed while the error is visible.
+  const [error, setError] = useState(null)
   const [showHowTo, setShowHowTo] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const loading = screen === 'loading'
 
+  const errorText = error
+    ? error.code === 'network'
+      ? t('errors.network')
+      : error.message || t('errors.generic')
+    : ''
+
   async function runAnalysis({ file = null, text = '' }) {
-    setError('')
+    setError(null)
     setScreen('loading')
     try {
-      const data = await analyzeContract({ file, text })
+      const data = await analyzeContract({ file, text, lang })
       setResult(data)
       setScreen('results')
       window.scrollTo({ top: 0 })
     } catch (err) {
-      setError(err.message)
+      setError({ code: err.code, message: err.message })
       setScreen('landing')
     }
   }
 
   async function runExample() {
     if (loading) return
-    setError('')
+    setError(null)
     setScreen('loading')
     try {
-      const { text } = await fetchSample()
-      const data = await analyzeContract({ text })
+      const { text } = await fetchSample(lang)
+      const data = await analyzeContract({ text, lang })
       setResult(data)
       setScreen('results')
       window.scrollTo({ top: 0 })
     } catch (err) {
-      setError(err.message)
+      setError({ code: err.code, message: err.message })
       setScreen('landing')
     }
   }
 
   function reset() {
     setResult(null)
-    setError('')
+    setError(null)
     setScreen('landing')
     window.scrollTo({ top: 0 })
   }
@@ -62,6 +74,7 @@ export default function App() {
         onHome={reset}
         onExample={runExample}
         onHowItWorks={() => setShowHowTo(true)}
+        onSettings={() => setShowSettings(true)}
       />
 
       <main className="app__main">
@@ -70,7 +83,7 @@ export default function App() {
         ) : (
           <Hero
             loading={loading}
-            error={error}
+            error={errorText}
             onRun={runAnalysis}
             onExample={runExample}
             onHowItWorks={() => setShowHowTo(true)}
@@ -81,6 +94,7 @@ export default function App() {
       <Disclaimer />
 
       {showHowTo && <HowItWorksModal onClose={() => setShowHowTo(false)} />}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   )
 }

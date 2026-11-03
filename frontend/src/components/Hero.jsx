@@ -1,4 +1,5 @@
 import InputCard from './InputCard.jsx'
+import { useI18n } from '../i18n/I18nContext.jsx'
 import LoadingState from './LoadingState.jsx'
 import '../styles/Hero.css'
 
@@ -8,13 +9,11 @@ import '../styles/Hero.css'
  * background. The loading state reuses the card shell so nothing jumps.
  */
 export default function Hero({ loading, error, onRun, onExample, onHowItWorks }) {
+  const { t } = useI18n()
   return (
     <section className="hero">
-      <h1 className="hero__headline">Know what you&rsquo;re signing.</h1>
-      <p className="hero__sub">
-        Paste a contract or drop in a file — get a plain-language, clause-by-clause
-        risk review in seconds.
-      </p>
+      <h1 className="hero__headline">{t('hero.headline')}</h1>
+      <p className="hero__sub">{t('hero.sub')}</p>
 
       {error && (
         <div className="hero__error" role="alert">
@@ -31,10 +30,10 @@ export default function Hero({ loading, error, onRun, onExample, onHowItWorks })
       {!loading && (
         <div className="hero__ctas">
           <button className="pill-btn" onClick={onExample}>
-            See Example Analysis
+            {t('hero.seeExample')}
           </button>
           <button className="pill-btn" onClick={onHowItWorks}>
-            Learn How It Works
+            {t('hero.learnHow')}
           </button>
         </div>
       )}

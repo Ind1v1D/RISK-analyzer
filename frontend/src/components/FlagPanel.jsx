@@ -1,19 +1,18 @@
+import { useI18n } from '../i18n/I18nContext.jsx'
+
 /**
  * Side panel listing every flag: risk badge, the flagged excerpt (truncated),
  * and the plain-language explanation a non-lawyer can understand.
  * Entries are scroll-linked with the highlights in the document.
  */
 export default function FlagPanel({ flags, activeIndex, onSelect, unmatchedCount }) {
+  const { t } = useI18n()
   if (flags.length === 0) {
     return (
       <aside className="flag-panel">
         <div className="empty-state">
-          <strong>No obvious red flags found.</strong>
-          <p>
-            The AI didn&rsquo;t flag anything that clearly needs attention — but
-            it can miss things. Consider having a licensed attorney review the
-            document before you sign.
-          </p>
+          <strong>{t('panel.emptyTitle')}</strong>
+          <p>{t('panel.emptyBody')}</p>
         </div>
       </aside>
     )
@@ -22,10 +21,8 @@ export default function FlagPanel({ flags, activeIndex, onSelect, unmatchedCount
   return (
     <aside className="flag-panel">
       <div className="flag-panel__header">
-        <h2 className="flag-panel__title">{flags.length} clause{flags.length === 1 ? '' : 's'} flagged</h2>
-        <p className="flag-panel__notice">
-          AI-generated starting points — not legal advice.
-        </p>
+        <h2 className="flag-panel__title">{t('panel.title', { count: flags.length })}</h2>
+        <p className="flag-panel__notice">{t('panel.notice')}</p>
       </div>
 
       {flags.map((flag, i) => (
@@ -37,7 +34,7 @@ export default function FlagPanel({ flags, activeIndex, onSelect, unmatchedCount
         >
           <div className="flag-item__head">
             <span className={`risk-badge risk-badge--${flag.risk_level.toLowerCase()}`}>
-              {flag.risk_level} risk
+              {t(`risk.${flag.risk_level.toLowerCase()}`)}
             </span>
             <span className="flag-item__num">#{i + 1}</span>
           </div>
@@ -47,10 +44,7 @@ export default function FlagPanel({ flags, activeIndex, onSelect, unmatchedCount
       ))}
 
       {unmatchedCount > 0 && (
-        <p className="flag-panel__footnote">
-          {unmatchedCount} flag{unmatchedCount === 1 ? '' : 's'} couldn&rsquo;t be
-          located in the text but {unmatchedCount === 1 ? 'is' : 'are'} listed above.
-        </p>
+        <p className="flag-panel__footnote">{t('panel.unmatched', { count: unmatchedCount })}</p>
       )}
     </aside>
   )

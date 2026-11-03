@@ -82,7 +82,7 @@
   white-space: pre-wrap;
   font-size: 14.5px;
   line-height: 1.8;
-  color: #1e293b;
+  color: var(--ink-doc);
   margin: 0;
 }
 
@@ -95,17 +95,17 @@ mark.mark {
 }
 
 .mark--high {
-  background: rgba(254, 226, 226, 0.95);
+  background: var(--mark-high-bg);
   border-bottom: 2px solid #ef4444;
 }
 
 .mark--medium {
-  background: rgba(254, 243, 199, 0.95);
+  background: var(--mark-med-bg);
   border-bottom: 2px solid #f59e0b;
 }
 
 .mark--low {
-  background: rgba(209, 250, 229, 0.95);
+  background: var(--mark-low-bg);
   border-bottom: 2px solid #10b981;
 }
 
@@ -128,7 +128,7 @@ mark.mark {
 
 .flag-panel__header {
   padding: 18px 20px 12px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--line-soft);
 }
 
 .flag-panel__title {
@@ -146,17 +146,17 @@ mark.mark {
 
 .flag-item {
   padding: 15px 20px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--line-soft);
   cursor: pointer;
   transition: background 0.12s;
 }
 
 .flag-item:hover {
-  background: #f8fafc;
+  background: var(--surface-alt);
 }
 
 .flag-item--active {
-  background: #f8fafc;
+  background: var(--surface-alt);
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
@@ -213,7 +213,7 @@ mark.mark {
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
-  color: #334155;
+  color: var(--ink-body);
 }
 
 .flag-panel__footnote {

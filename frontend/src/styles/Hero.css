@@ -33,7 +33,7 @@
   width: 100%;
   background: var(--risk-high-bg);
   color: var(--risk-high-fg);
-  border: 1px solid #fecaca;
+  border: 1px solid var(--risk-high-border);
   border-radius: 16px;
   padding: 12px 18px;
   font-size: 14px;
@@ -55,7 +55,7 @@
   position: relative;
   width: min(680px, 100%);
   background: var(--card);
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  border: 1px solid var(--line);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   padding: 22px 22px 18px;
@@ -76,12 +76,12 @@
 }
 
 .input-card textarea::placeholder {
-  color: #94a3b8;
+  color: var(--placeholder);
 }
 
 .dropzone {
   min-height: 160px;
-  border: 1.5px dashed #cbd5e1;
+  border: 1.5px dashed var(--dashed);
   border-radius: 18px;
   display: flex;
   flex-direction: column;
@@ -103,12 +103,12 @@
 
 .dropzone--over {
   border-color: var(--accent);
-  background: #f8fbff;
-  color: var(--accent);
+  background: var(--dropzone-over);
+  color: var(--accent-text);
 }
 
 .dropzone--over strong {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .file-chip {
@@ -116,7 +116,7 @@
   align-items: center;
   gap: 10px;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
   border-radius: var(--radius-pill);
   padding: 8px 8px 8px 16px;
   font-size: 13.5px;
@@ -127,8 +127,8 @@
 
 .file-chip__x {
   border: none;
-  background: rgba(37, 99, 235, 0.15);
-  color: var(--accent);
+  background: var(--accent-tint);
+  color: var(--accent-text);
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -171,7 +171,7 @@
 }
 
 .submit-btn:disabled {
-  background: #cbd5e1;
+  background: var(--disabled-bg);
   cursor: not-allowed;
 }
 
@@ -219,7 +219,7 @@
 .loading__step {
   margin: 0;
   font-size: 14px;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .loading__hint {

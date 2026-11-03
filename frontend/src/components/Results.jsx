@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import HighlightedText from './HighlightedText.jsx'
 import FlagPanel from './FlagPanel.jsx'
 import { locateFlags } from '../lib/spans.js'
+import { useI18n } from '../i18n/I18nContext.jsx'
 import '../styles/Results.css'
 
 /**
@@ -10,6 +11,7 @@ import '../styles/Results.css'
  * the right, scroll-linked in both directions.
  */
 export default function Results({ result, onReset }) {
+  const { t } = useI18n()
   const { full_text: fullText, flags } = result
   const [activeIndex, setActiveIndex] = useState(null)
 
@@ -37,21 +39,21 @@ export default function Results({ result, onReset }) {
     <section className="results">
       <header className="results__bar">
         <div>
-          <h1 className="results__title">Analysis results</h1>
+          <h1 className="results__title">{t('results.title')}</h1>
           <div className="results__counts">
-            <span className="count-pill count-pill--high">{counts.High} high</span>
-            <span className="count-pill count-pill--medium">{counts.Medium} medium</span>
-            <span className="count-pill count-pill--low">{counts.Low} low</span>
+            <span className="count-pill count-pill--high">{t('results.countHigh', { count: counts.High })}</span>
+            <span className="count-pill count-pill--medium">{t('results.countMedium', { count: counts.Medium })}</span>
+            <span className="count-pill count-pill--low">{t('results.countLow', { count: counts.Low })}</span>
           </div>
         </div>
         <button className="btn-primary" onClick={onReset}>
-          Analyze another contract
+          {t('results.again')}
         </button>
       </header>
 
       <div className="results__grid">
         <section className="doc-panel">
-          <p className="doc-panel__label">Your contract — flagged clauses highlighted</p>
+          <p className="doc-panel__label">{t('results.docLabel')}</p>
           <HighlightedText
             fullText={fullText}
             flags={flags}

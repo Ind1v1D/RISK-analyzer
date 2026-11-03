@@ -18,7 +18,8 @@ from google import genai
 from google.genai import types
 from pydantic import ValidationError
 
-from prompts import SYSTEM_PROMPT, AnalysisResult, ClauseFlag
+from messages import msg
+from prompts import AnalysisResult, ClauseFlag, build_system_prompt
 
 load_dotenv()  # reads backend/.env into the environment
 
@@ -36,21 +37,21 @@ FALLBACK_MARKERS = TRANSIENT_MARKERS + ("404", "NOT_FOUND")
 
 
 class AnalysisError(Exception):
-    """Raised when the LLM call or its output can't be used; message is user-safe."""
+    """Raised when the LLM call or its output can't be used; message is user-safe.
+
+    Built from a message `key` so it is already in the user's language.
+    """
 
 
-def analyze_contract(full_text: str) -> list[ClauseFlag]:
-    """Return validated clause flags for the given contract text."""
+def analyze_contract(full_text: str, lang: str = "en") -> list[ClauseFlag]:
+    """Return validated clause flags; explanations/errors are in `lang` (en/ru/kk)."""
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise AnalysisError(
-            "The server is missing GEMINI_API_KEY. Add it to backend/.env "
-            "(see README setup steps) and restart the server."
-        )
+        raise AnalysisError(msg("missing_api_key", lang))
 
     client = genai.Client(api_key=api_key)
 
-    response, last_exc = _generate(client, MODEL, full_text)
+    response, last_exc = _generate(client, MODEL, full_text, lang)
 
     # Primary model still unavailable? Try one fallback model (e.g. a -lite
     # variant under lighter demand) before giving up.
@@ -58,17 +59,20 @@ def analyze_contract(full_text: str) -> list[ClauseFlag]:
         fallback = _pick_fallback_model(client)
         if fallback:
             print(f"[analysis] {MODEL} unavailable; retrying with fallback: {fallback}", flush=True)
-            response, last_exc = _generate(client, fallback, full_text)
+            response, last_exc = _generate(client, fallback, full_text, lang)
 
     if response is None:
         exc = last_exc
         detail = str(exc).strip().replace("\n", " ")[:300]
-        raise AnalysisError(
-            f"The AI request failed ({exc.__class__.__name__})"
-            + (f": {detail}" if detail else " after several attempts. Please try again.")
-        ) from exc
+        error = exc.__class__.__name__
+        message = (
+            msg("ai_failed_detail", lang, error=error, detail=detail)
+            if detail
+            else msg("ai_failed", lang, error=error)
+        )
+        raise AnalysisError(message) from exc
 
-    result = _parse(response)
+    result = _parse(response, lang)
     return _postprocess(result.flags)
 
 
@@ -78,7 +82,7 @@ def _matches(exc: Exception, markers: tuple[str, ...]) -> bool:
     return any(marker in message for marker in markers)
 
 
-def _generate(client, model: str, full_text: str):
+def _generate(client, model: str, full_text: str, lang: str = "en"):
     """Call Gemini once per attempt; returns (response | None, error | None).
 
     Retries only transient errors — auth failures and bad requests fail fast.
@@ -90,7 +94,7 @@ def _generate(client, model: str, full_text: str):
                 model=model,
                 contents=f"Review this contract:\n\n{full_text}",
                 config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT,
+                    system_instruction=build_system_prompt(lang),
                     # Constrain output to our schema so parsing never depends
                     # on the model cooperating with free-form instructions.
                     response_mime_type="application/json",
@@ -140,7 +144,7 @@ def _pick_fallback_model(client) -> str | None:
     return None
 
 
-def _parse(response) -> AnalysisResult:
+def _parse(response, lang: str = "en") -> AnalysisResult:
     """Use the SDK's parsed object when available, else validate raw JSON."""
     parsed = getattr(response, "parsed", None)
     if isinstance(parsed, AnalysisResult):
@@ -148,13 +152,11 @@ def _parse(response) -> AnalysisResult:
 
     raw = getattr(response, "text", None)
     if not raw:
-        raise AnalysisError("The AI returned an empty response. Please try again.")
+        raise AnalysisError(msg("ai_empty", lang))
     try:
         return AnalysisResult.model_validate(json.loads(raw))
     except (json.JSONDecodeError, ValidationError) as exc:
-        raise AnalysisError(
-            "The AI returned output we couldn't read. Please try again."
-        ) from exc
+        raise AnalysisError(msg("ai_unreadable", lang)) from exc
 
 
 def _postprocess(flags: list[ClauseFlag]) -> list[ClauseFlag]:
