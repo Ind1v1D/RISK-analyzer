@@ -1,0 +1,57 @@
+INDEPENDENT CONTRACTOR AGREEMENT
+
+This Independent Contractor Agreement ("Agreement") is made between Northwind
+Studios LLC ("Client") and Jordan Reyes ("Contractor").
+
+1. SERVICES. Contractor will design and develop the Client's marketing website,
+including up to eight pages, source files, and basic search-engine
+optimization setup, in accordance with the schedule agreed by the parties.
+
+2. TERM. This Agreement begins on the effective date and continues until the
+services are completed. Client may terminate this Agreement at any time, for
+any reason or no reason, upon written notice. Contractor must provide at least
+thirty (30) days' written notice before ceasing any work in progress.
+
+3. COMPENSATION. Client will pay Contractor a total fee of $6,000, payable
+within ninety (90) days following Client's acceptance of the final
+deliverable. Acceptance shall be determined by Client in Client's sole and
+absolute discretion. Time is of the essence with respect to Contractor's
+delivery deadlines.
+
+4. CANCELLATION. In the event this Agreement is terminated for any reason
+whatsoever, Contractor hereby waives any and all fees for work performed, work
+in progress, or cancellation, and Client's sole liability shall be limited to
+amounts already paid prior to termination.
+
+5. REVISIONS. Contractor will make all revisions requested by Client, without
+limitation as to number, scope, or hours expended, at no additional cost.
+
+6. INTELLECTUAL PROPERTY. All work product, including without limitation any
+pre-existing tools, code libraries, design systems, templates, and know-how
+used or created by Contractor in connection with the services, shall be the
+sole and exclusive property of Client. Contractor hereby assigns all right,
+title, and interest therein worldwide in perpetuity.
+
+7. INDEMNIFICATION. Contractor shall indemnify, defend, and hold harmless
+Client and its officers, directors, and employees from and against any and all
+claims, damages, losses, and expenses arising out of or related to the
+services, and Contractor's liability under this paragraph shall be unlimited.
+
+8. CONFIDENTIALITY. Contractor shall keep secret and confidential all
+information of Client, including without limitation information that is
+publicly available or generally known in the industry.
+
+9. NON-COMPETE. For two (2) years following completion of the services,
+Contractor shall not perform website design or development services for any
+business or individual located anywhere in the United States.
+
+10. GOVERNING LAW. This Agreement shall be governed by the laws of the State
+of Delaware, and Contractor consents to the exclusive jurisdiction of its
+courts for any dispute arising under this Agreement.
+
+11. EXPENSES. Contractor shall bear all costs of performing the services,
+including equipment, software, and travel.
+
+12. ENTIRE AGREEMENT. This Agreement constitutes the entire agreement between
+the parties and supersedes all prior understandings. This Agreement may be
+amended only in a writing signed by both parties.

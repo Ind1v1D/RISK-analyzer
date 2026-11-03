@@ -1,0 +1,267 @@
+/* ------------------------------------------------------------------
+   Design tokens + global shell: background, navbar, shared buttons,
+   modal, disclaimer. Component-specific styles live in Hero.css and
+   Results.css.
+------------------------------------------------------------------- */
+
+:root {
+  --ink: #0f172a;
+  --ink-soft: #64748b;
+  --line: #e2e8f0;
+  --card: #ffffff;
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+
+  --risk-high-fg: #b91c1c;
+  --risk-high-bg: #fef2f2;
+  --risk-med-fg: #b45309;
+  --risk-med-bg: #fffbeb;
+  --risk-low-fg: #15803d;
+  --risk-low-bg: #f0fdf4;
+
+  --radius-card: 28px;
+  --radius-pill: 999px;
+  --shadow-card: 0 10px 40px rgba(15, 23, 42, 0.07);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Soft, atmospheric blue-to-white gradient (cloud-like, slightly blurred look) */
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(60rem 40rem at 12% -10%, rgba(147, 197, 253, 0.45), transparent 60%),
+    radial-gradient(50rem 35rem at 88% -5%, rgba(191, 219, 254, 0.5), transparent 55%),
+    radial-gradient(70rem 50rem at 50% 115%, rgba(219, 234, 254, 0.65), transparent 60%),
+    linear-gradient(180deg, #f2f7ff 0%, #ffffff 55%);
+  background-attachment: fixed;
+}
+
+/* Faint grid pattern under the gradient for texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 25%, black 30%, transparent 85%);
+  mask-image: radial-gradient(ellipse at 50% 25%, black 30%, transparent 85%);
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ------------------------------- Navbar ------------------------------- */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px clamp(16px, 4vw, 36px);
+  background: transparent;
+}
+
+.navbar__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 0;
+}
+
+.navbar__mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--accent), #60a5fa);
+  display: inline-block;
+}
+
+.navbar__links {
+  display: flex;
+  gap: 22px;
+}
+
+.navbar__link {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  padding: 6px 2px;
+  transition: color 0.15s;
+}
+
+.navbar__link:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.navbar__link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* --------------------------- Shared buttons --------------------------- */
+
+.chip {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--ink-soft);
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-size: 13.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.15s;
+}
+
+.chip:hover {
+  border-color: #bfdbfe;
+  color: var(--ink);
+}
+
+.chip--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.chip--active:hover {
+  color: #ffffff;
+}
+
+.pill-btn {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink);
+  border-radius: var(--radius-pill);
+  padding: 10px 20px;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.pill-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-primary {
+  border: none;
+  background: var(--accent);
+  color: #ffffff;
+  border-radius: var(--radius-pill);
+  padding: 11px 22px;
+  font-size: 14.5px;
+  font-weight: 500;
+  transition: filter 0.15s;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+/* ------------------------------ Disclaimer ---------------------------- */
+
+.disclaimer {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  padding: 16px 20px 26px;
+  line-height: 1.6;
+}
+
+/* -------------------------------- Modal ------------------------------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 24px;
+  max-width: 560px;
+  width: 100%;
+  padding: 32px;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.25);
+}
+
+.modal__title {
+  font-family: Montserrat, Inter, sans-serif;
+  font-weight: 500;
+  font-size: 1.4rem;
+  margin: 0 0 18px;
+}
+
+.modal__steps {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: #334155;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.modal__note {
+  margin: 20px 0 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  line-height: 1.55;
+}
+
+.modal__close {
+  margin-top: 20px;
+  display: block;
+  margin-left: auto;
+}
