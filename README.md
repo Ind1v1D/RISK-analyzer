@@ -1,113 +1,169 @@
-# ClauseCheck — AI Contract Risk Analysis Assistant (MVP)
+# ⚖️ ClauseCheck
 
-A first-pass contract review tool for non-lawyers: upload a contract (PDF,
-DOCX, or pasted text) and get an AI-generated, clause-by-clause list of risky
-or unclear provisions, highlighted inline and explained in plain language.
+**AI contract risk analysis assistant for non-lawyers**
 
-> **This tool does not provide legal advice and does not replace a licensed
-> attorney.** Flags are AI-generated starting points for your own review.
+Upload a contract, get a clause-by-clause list of risky or unclear provisions,
+highlighted inline and explained in plain language.
 
-Built for a university IT project management course deliverable.
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+![Gemini](https://img.shields.io/badge/Google-Gemini-4285F4?logo=google&logoColor=white)
+![Status](https://img.shields.io/badge/status-MVP-orange)
+
+</div>
+
+> [!WARNING]
+> **This tool does not provide legal advice and does not replace a licensed attorney.**
+> Flags are AI-generated starting points for your own review.
+
+<!-- Add a screenshot or GIF of the results screen here, e.g.:
+![ClauseCheck results screen](docs/screenshot-results.png)
+-->
+
+## Table of contents
+
+- [Features](#features)
+- [Tech stack](#tech-stack)
+- [Quick start](#quick-start)
+- [Using the app](#using-the-app)
+- [How it works](#how-it-works)
+- [API reference](#api-reference)
+- [Project structure](#project-structure)
+- [Privacy](#privacy)
+- [Troubleshooting](#troubleshooting)
+- [Limitations and roadmap](#limitations-and-roadmap)
+- [Disclaimer](#disclaimer)
 
 ---
 
-## Features (MVP scope)
+## Features
 
-- **Upload or paste** — drag-and-drop / file picker (PDF, DOCX, TXT) or plain-text paste
-- **AI analysis** — Gemini reviews the contract, flags risky/unclear/unusually
-  unfavorable clauses, classifies each **High / Medium / Low**, and explains
-  why in non-legal language (hedged, never claims certainty)
-- **Results view** — original contract text with color-coded highlights plus a
-  scroll-linked side panel with a plain-language explanation per flag
-- **Persistent disclaimer** on every screen
-- **No persistence** — documents are processed in memory for the request only
+- 📄 **Upload or paste**: drag-and-drop or file picker (PDF, DOCX, TXT), or plain-text paste.
+- 🤖 **AI analysis**: Gemini reviews the contract, flags risky, unclear, or unusually
+  unfavorable clauses, classifies each as **High / Medium / Low**, and explains why in
+  non-legal language (hedged, never claims certainty).
+- 🖍️ **Results view**: the original text with color-coded highlights, plus a scroll-linked
+  side panel with a plain-language explanation for every flag.
+- 🛡️ **Persistent disclaimer** on every screen.
+- 🔒 **No persistence**: documents are processed in memory for the duration of the request only.
 
-**Out of scope (intentionally):** accounts/auth, version comparison, editing/
-redlining, document storage, automated decisions.
+**Out of scope (intentionally):** accounts/auth, version comparison, editing/redlining,
+document storage, automated decisions.
 
 ## Tech stack
 
-| Layer     | Tech                                                        |
-| --------- | ----------------------------------------------------------- |
-| Frontend  | React 18 + Vite, plain CSS (no UI framework)                 |
-| Backend   | Python 3.10+ / FastAPI                                      |
-| LLM       | Google Gemini (`google-genai` SDK, JSON-schema output)      |
-| Parsing   | `pypdf` (PDF), `python-docx` (DOCX)                          |
-| Database  | none — in-memory per request                                |
+| Layer    | Technology                                             |
+| -------- | ------------------------------------------------------ |
+| Frontend | React 18 + Vite, plain CSS (no UI framework)           |
+| Backend  | Python 3.10+ / FastAPI                                 |
+| LLM      | Google Gemini (`google-genai` SDK, JSON-schema output) |
+| Parsing  | `pypdf` (PDF), `python-docx` (DOCX)                    |
+| Database | None, everything is in memory per request              |
 
 ---
 
-## Setup
+## Quick start
 
 ### Prerequisites
 
 - **Python 3.10+** and **Node.js 18+**
-- A **Gemini API key** — free at <https://aistudio.google.com/apikey>
+- A **Gemini API key**, free at <https://aistudio.google.com/apikey>
+- **Git**
 
-### 1. Backend
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Ind1v1D/RISK-analyzer.git
+cd RISK-analyzer
+```
+
+### 2. Set up the backend
+
+<details open>
+<summary><b>Windows (PowerShell)</b></summary>
 
 ```powershell
-cd contract-risk-assistant\backend
+cd backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
-
-# Add your API key
 Copy-Item .env.example .env
-# then edit .env and set GEMINI_API_KEY=your-real-key
 ```
 
-### 2. Frontend
+</details>
 
-```powershell
-cd contract-risk-assistant\frontend
+<details>
+<summary><b>macOS / Linux</b></summary>
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+```
+
+</details>
+
+Then open `backend/.env` and set your key:
+
+```env
+GEMINI_API_KEY=your-real-key
+```
+
+> [!IMPORTANT]
+> Never commit `.env`. It is already listed in `.gitignore`. Only `.env.example`
+> (with a placeholder value) belongs in the repository.
+
+### 3. Set up the frontend
+
+```bash
+cd frontend
 npm install
 ```
 
----
+### 4. Run locally
 
-## Running locally
+You need two terminals.
 
-Two terminals:
+**Terminal 1: backend** (port 8000)
 
-**Terminal 1 — backend** (port 8000):
-
-```powershell
-cd contract-risk-assistant\backend
-.venv\Scripts\activate
+```bash
+cd backend
+# activate the virtual environment first (see step 2)
 uvicorn main:app --reload --port 8000
 ```
 
-**Terminal 2 — frontend** (port 5173):
+**Terminal 2: frontend** (port 5173)
 
-```powershell
-cd contract-risk-assistant\frontend
+```bash
+cd frontend
 npm run dev
 ```
 
-Open <http://localhost:5173>. The Vite dev server proxies `/api` to the
-backend, so no CORS configuration is needed in development.
+Open <http://localhost:5173>. The Vite dev server proxies `/api` to the backend,
+so no CORS configuration is needed in development.
 
-Quick check: <http://localhost:8000/api/health> should return `{"status":"ok"}`.
+**Health check:** <http://localhost:8000/api/health> should return `{"status":"ok"}`.
 
 ---
 
 ## Using the app
 
-1. **Paste** contract text or **upload** a PDF/DOCX/TXT using the chips under
-   the input card, then hit the circular **→** button.
-2. Wait a few seconds for the analysis (loading state shows progress text).
-3. On the results screen, click any **highlight** or **panel entry** — the
-   other column scrolls to the matching item.
-4. Try **See Example Analysis** to run the bundled sample
-   (`samples/freelance-agreement.txt`, a freelance agreement with planted
-   risky clauses) — useful for demos.
+1. **Paste** contract text or **upload** a PDF/DOCX/TXT using the chips under the input card,
+   then press the circular **→** button.
+2. Wait a few seconds while the analysis runs (the loading screen shows progress text).
+3. On the results screen, click any **highlight** or **panel entry**. The other column
+   scrolls to the matching item.
+4. No contract at hand? Click **See Example Analysis** to run the bundled sample
+   (`samples/freelance-agreement.txt`, a freelance agreement with planted risky clauses).
+   Handy for demos.
 
 ---
 
-## The analysis pipeline
-
-Comments in the code mark each step; here's the flow end-to-end:
+## How it works
 
 ```
 upload/paste  →  extract text  →  Gemini call  →  validate JSON  →  render
@@ -115,39 +171,46 @@ upload/paste  →  extract text  →  Gemini call  →  validate JSON  →  rend
                                    prompts.py)                       HighlightedText.jsx)
 ```
 
-1. **Upload** — `POST /api/analyze` receives multipart file *or* pasted text
-   (`backend/main.py`). 10 MB / 200k-character limits; nothing is written to disk.
-2. **Extract** — `pypdf` / `python-docx` / direct decode, then whitespace cleanup
-   (`backend/extraction.py`). Scanned/empty documents get a friendly error.
-3. **LLM call** — text is sent to Gemini with a system prompt demanding verbatim
+1. **Upload**: `POST /api/analyze` receives a multipart file *or* pasted text
+   (`backend/main.py`). Limits: 10 MB and 200k characters. Nothing is written to disk.
+2. **Extract**: `pypdf` / `python-docx` / direct decode, then whitespace cleanup
+   (`backend/extraction.py`). Scanned or empty documents get a friendly error.
+3. **LLM call**: the text is sent to Gemini with a system prompt that demands verbatim
    clause excerpts, risk levels, hedged plain-language explanations, and a
-   "don't over-flag boilerplate" rule (`backend/prompts.py`).
-   Output is **schema-constrained JSON**, so parsing never depends on luck.
-4. **Parse/validate** — Pydantic validates the schema; duplicates are dropped
-   and results capped at 20 flags (`backend/analysis.py`).
-5. **Render** — the frontend locates each flagged excerpt in the original text
-   (case/whitespace-insensitive match), wraps it in a color-coded `<mark>`, and
-   lists explanations in the side panel (`frontend/src/lib/spans.js`). Excerpts
-   that can't be located still appear in the panel without an inline highlight.
+   "don't over-flag boilerplate" rule (`backend/prompts.py`). Output is
+   **schema-constrained JSON**, so parsing never depends on luck.
+4. **Validate**: Pydantic checks the schema, duplicates are dropped, and results are
+   capped at 20 flags (`backend/analysis.py`).
+5. **Render**: the frontend locates each flagged excerpt in the original text
+   (case- and whitespace-insensitive), wraps it in a color-coded `<mark>`, and lists
+   explanations in the side panel (`frontend/src/lib/spans.js`). Excerpts that cannot be
+   located still appear in the panel, just without an inline highlight.
 
 ---
 
-## API
+## API reference
 
-| Method | Route            | Body                                       | Response |
-| ------ | ---------------- | ------------------------------------------ | -------- |
-| `POST` | `/api/analyze`   | multipart: `file` (PDF/DOCX/TXT) **or** `text` | `{ full_text, flags: [{ clause_text, risk_level, explanation }] }` |
-| `GET`  | `/api/sample`    | —                                          | `{ text }` (demo contract) |
-| `GET`  | `/api/health`    | —                                          | `{ status: "ok" }` |
+| Method | Route          | Body                                           | Response                                                           |
+| ------ | -------------- | ---------------------------------------------- | ------------------------------------------------------------------ |
+| `POST` | `/api/analyze` | multipart: `file` (PDF/DOCX/TXT) **or** `text` | `{ full_text, flags: [{ clause_text, risk_level, explanation }] }` |
+| `GET`  | `/api/sample`  | none                                           | `{ text }` (demo contract)                                         |
+| `GET`  | `/api/health`  | none                                           | `{ status: "ok" }`                                                 |
 
 Errors return `{ "detail": "..." }` with a user-readable message.
+
+**Example request**
+
+```bash
+curl -X POST http://localhost:8000/api/analyze \
+  -F "text=The Client may terminate at any time without payment for work completed."
+```
 
 ---
 
 ## Project structure
 
 ```
-contract-risk-assistant/
+RISK-analyzer/
 ├── backend/
 │   ├── main.py          # FastAPI app + routes (pipeline steps 1 & 5)
 │   ├── extraction.py    # PDF/DOCX/TXT → plain text (step 2)
@@ -171,18 +234,48 @@ contract-risk-assistant/
 
 ---
 
-## Limitations & possible extensions
+## Privacy
 
-- Single LLM call; documents over **200k characters** are rejected (chunking
-  is the natural next step).
-- No document persistence, accounts, or contract editing — by design (MSSVP scope).
-- Highlights require the model to reproduce clause text; unmatched flags still
-  show in the panel.
-- The model can miss issues or flag imperfectly — always confirm with a
-  licensed attorney.
+ClauseCheck itself stores nothing: documents live in memory for the request only.
+However, **the contract text is sent to the Google Gemini API** for analysis.
+Do not upload confidential or sensitive contracts unless you have reviewed Google's
+API terms and data-handling policy for your key type (free vs. paid).
+
+## Troubleshooting
+
+| Problem                                   | Fix                                                                                       |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `GEMINI_API_KEY` errors / 401 / 403       | Check that `backend/.env` exists and contains a valid key, then restart the backend.      |
+| Frontend shows a network error            | Make sure the backend is running on port 8000 (`/api/health`).                            |
+| "No text found" for a PDF                 | The PDF is probably a scan (images only). OCR is not supported yet.                       |
+| PowerShell blocks `activate`              | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, then activate again.           |
+| Some flags have no inline highlight       | The model paraphrased the excerpt. The explanation is still shown in the side panel.      |
+
+---
+
+## Limitations and roadmap
+
+**Current limitations**
+
+- Single LLM call; documents over **200k characters** are rejected.
+- No document persistence, accounts, or contract editing, by design (MVP scope).
+- Highlights require the model to reproduce clause text verbatim; unmatched flags appear only in the panel.
+- The model can miss issues or flag imperfectly. Always confirm with a licensed attorney.
+
+**Possible next steps**
+
+- [ ] Chunking for long documents
+- [ ] OCR for scanned PDFs
+- [ ] Production deployment (frontend on Vercel/Netlify, backend on Render/Railway)
+- [ ] Multi-language contract support
+- [ ] Export of the analysis (PDF/Markdown)
+
+---
 
 ## Disclaimer
 
-This software is provided for informational purposes only and does **not**
-constitute legal advice. It does not create an attorney–client relationship
-and is not a substitute for advice from a qualified lawyer.
+This software is provided for informational purposes only and does **not** constitute
+legal advice. It does not create an attorney–client relationship and is not a substitute
+for advice from a qualified lawyer.
+
+<!-- Optional: add a LICENSE file and mention it here, e.g. "Released under the MIT License." -->
