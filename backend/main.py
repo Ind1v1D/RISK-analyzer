@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from analysis import AnalysisError, analyze_contract
 from extraction import ExtractionError, extract_text
 from messages import msg, normalize_lang
+from compare_router import router as compare_router
 
 MAX_FILE_BYTES = 10 * 1024 * 1024  # 10 MB
 MAX_CHARS = 200_000  # generous single-call limit (~50k tokens)
@@ -20,6 +21,7 @@ MAX_CHARS = 200_000  # generous single-call limit (~50k tokens)
 SAMPLE_PATH = Path(__file__).resolve().parent.parent / "samples" / "freelance-agreement.txt"
 
 app = FastAPI(title="Contract Risk Analysis Assistant", version="0.1.0")
+app.include_router(compare_router)
 
 # Vite dev server origin; harmless if it never matches (the dev proxy is primary).
 app.add_middleware(

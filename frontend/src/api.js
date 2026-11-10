@@ -43,3 +43,22 @@ export async function fetchSample(lang = 'en') {
   if (!res.ok) throw await errorFrom(res)
   return res.json()
 }
+
+/** Compare two pasted versions or two uploaded files. */
+export async function compareContracts({ v1 = '', v2 = '', files = null }) {
+  let res
+  if (files?.[0] && files?.[1]) {
+    const form = new FormData()
+    form.append('v1', files[0])
+    form.append('v2', files[1])
+    res = await request('/api/compare/files', { method: 'POST', body: form })
+  } else {
+    res = await request('/api/compare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ v1, v2 }),
+    })
+  }
+  if (!res.ok) throw await errorFrom(res)
+  return res.json()
+}

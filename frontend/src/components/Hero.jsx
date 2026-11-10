@@ -8,7 +8,7 @@ import '../styles/Hero.css'
  * action), and the secondary CTAs — all vertically centered on the gradient
  * background. The loading state reuses the card shell so nothing jumps.
  */
-export default function Hero({ loading, error, onRun, onExample, onHowItWorks }) {
+export default function Hero({ loading, error, onRun, onExample, onHowItWorks, onCompare }) {
   const { t } = useI18n()
   return (
     <section className="hero">
@@ -38,6 +38,9 @@ export default function Hero({ loading, error, onRun, onExample, onHowItWorks })
           </button>
           <button className="pill-btn" onClick={onHowItWorks}>
             {t('hero.learnHow')}
+          </button>
+          <button className="pill-btn" onClick={onCompare}>
+            {t('hero.compare')}
           </button>
         </div>
       )}

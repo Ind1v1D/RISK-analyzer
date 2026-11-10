@@ -37,7 +37,7 @@ const GearIcon = () => (
 )
 
 /** Minimal transparent navbar: logo left, text links + theme toggle + settings right. */
-export default function Navbar({ loading, onHome, onExample, onHowItWorks, onSettings }) {
+export default function Navbar({ loading, onHome, onExample, onCompare, onHowItWorks, onSettings }) {
   const { t } = useI18n()
   const { theme, toggleTheme } = useTheme()
   const themeLabel = theme === 'dark' ? t('nav.themeToLight') : t('nav.themeToDark')
@@ -55,6 +55,9 @@ export default function Navbar({ loading, onHome, onExample, onHowItWorks, onSet
         </button>
         <button className="navbar__link" onClick={onExample} disabled={loading}>
           {t('nav.example')}
+        </button>
+        <button className="navbar__link" onClick={onCompare}>
+          {t('nav.compare')}
         </button>
 
         <div className="navbar__actions">

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Navbar from './components/Navbar.jsx'
 import Hero from './components/Hero.jsx'
 import Results from './components/Results.jsx'
 import Disclaimer from './components/Disclaimer.jsx'
+import Compare from './components/Compare.jsx'
 import HowItWorksModal from './components/HowItWorksModal.jsx'
 import SettingsModal from './components/SettingsModal.jsx'
 import { analyzeContract, fetchSample } from './api.js'
@@ -14,7 +15,7 @@ import { useI18n } from './i18n/I18nContext.jsx'
  */
 export default function App() {
   const { t, lang } = useI18n()
-  const [screen, setScreen] = useState('landing') // 'landing' | 'loading' | 'results'
+  const [screen, setScreen] = useState(() => window.location.pathname === '/compare' ? 'compare' : 'landing') // 'landing' | 'loading' | 'results' | 'compare'
   const [result, setResult] = useState(null)
   // Stored as an object (not a string) so the message is translated at render
   // time and follows the language if it is changed while the error is visible.
@@ -23,6 +24,17 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
 
   const loading = screen === 'loading'
+
+  useEffect(() => {
+    const onPopState = () => setScreen(window.location.pathname === '/compare' ? 'compare' : 'landing')
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  function openCompare() {
+    window.history.pushState({}, '', '/compare')
+    setScreen('compare')
+  }
 
   const errorText = error
     ? error.code === 'network'
@@ -61,6 +73,7 @@ export default function App() {
   }
 
   function reset() {
+    if (window.location.pathname !== '/') window.history.pushState({}, '', '/')
     setResult(null)
     setError(null)
     setScreen('landing')
@@ -73,12 +86,15 @@ export default function App() {
         loading={loading}
         onHome={reset}
         onExample={runExample}
+        onCompare={openCompare}
         onHowItWorks={() => setShowHowTo(true)}
         onSettings={() => setShowSettings(true)}
       />
 
       <main className="app__main">
-        {screen === 'results' && result ? (
+        {screen === 'compare' ? (
+          <Compare onHome={reset} />
+        ) : screen === 'results' && result ? (
           <Results result={result} onReset={reset} />
         ) : (
           <Hero
@@ -86,6 +102,7 @@ export default function App() {
             error={errorText}
             onRun={runAnalysis}
             onExample={runExample}
+            onCompare={openCompare}
             onHowItWorks={() => setShowHowTo(true)}
           />
         )}

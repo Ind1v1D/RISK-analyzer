@@ -46,6 +46,8 @@ highlighted inline and explained in plain language.
   non-legal language (hedged, never claims certainty).
 - 🖍️ **Results view**: the original text with color-coded highlights, plus a scroll-linked
   side panel with a plain-language explanation for every flag.
+- 🔎 **Version comparison**: compare two pasted contracts or two PDF/DOCX/TXT/MD files;
+  review added, removed, modified, and moved clauses, key terms, risk changes, and a verdict.
 - 🌍 **Three interface languages**: English, Русский, Қазақша. Switch in **Settings** (⚙️ in the navbar).
   The AI's explanations and the error messages are written in the selected language too.
 - 🌗 **Light / dark theme**: one-click toggle (☀️/🌙 in the navbar). Follows your OS until you choose;
@@ -53,8 +55,8 @@ highlighted inline and explained in plain language.
 - 🛡️ **Persistent disclaimer** on every screen.
 - 🔒 **No persistence**: documents are processed in memory for the duration of the request only.
 
-**Out of scope (intentionally):** accounts/auth, version comparison, editing/redlining,
-document storage, automated decisions.
+**Out of scope (intentionally):** accounts/auth, editing/redlining, document storage,
+automated decisions.
 
 ## Tech stack
 
@@ -150,6 +152,18 @@ npm run dev
 Open <http://localhost:5173>. The Vite dev server proxies `/api` to the backend,
 so no CORS configuration is needed in development.
 
+### Run backend regression tests
+
+From the `backend` directory, with the backend dependencies installed, run:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The regression tests check that analysis results are ordered consistently,
+duplicate excerpts keep the highest risk level, and Gemini is called with
+temperature `0` and a fixed seed.
+
 **Health check:** <http://localhost:8000/api/health> should return `{"status":"ok"}`.
 
 ---
@@ -166,6 +180,9 @@ so no CORS configuration is needed in development.
 5. No contract at hand? Click **See Example Analysis** to run the bundled sample
    (`samples/freelance-agreement.txt`, a freelance agreement with planted risky clauses).
    Handy for demos.
+6. Choose **Compare versions** in the navigation to paste two versions or upload both files.
+   Review the changed clauses, key terms, and the rule-based risk verdict. Uploaded files
+   stay in memory and are discarded after the request.
 
 ---
 
@@ -201,6 +218,8 @@ upload/paste  →  extract text  →  Gemini call  →  validate JSON  →  rend
 | `POST` | `/api/analyze` | multipart: `file` (PDF/DOCX/TXT) **or** `text`, optional `lang` (`en` \| `ru` \| `kk`, default `en`) | `{ full_text, flags: [{ clause_text, risk_level, explanation }] }` |
 | `GET`  | `/api/sample`  | optional query `?lang=en\|ru\|kk`              | `{ text }` (demo contract)                                         |
 | `GET`  | `/api/health`  | none                                           | `{ status: "ok" }`                                                 |
+| `POST` | `/api/compare` | JSON: `{ "v1": "...", "v2": "..." }` | `{ verdict, summary, changes, disclaimer }` |
+| `POST` | `/api/compare/files` | multipart: `v1`, `v2` (PDF/DOCX/TXT/MD) | `{ verdict, summary, changes, disclaimer }` |
 
 Errors return `{ "detail": "..." }` with a user-readable message in the requested `lang`.
 
@@ -221,6 +240,8 @@ RISK-analyzer/
 │   ├── main.py          # FastAPI app + routes (pipeline steps 1 & 5)
 │   ├── extraction.py    # PDF/DOCX/TXT → plain text (step 2)
 │   ├── analysis.py      # Gemini call + validation (steps 3-4)
+│   ├── contract_compare.py # Clause alignment, key terms, diffs, risk verdict
+│   ├── compare_router.py # POST /api/compare and /api/compare/files
 │   ├── prompts.py       # System prompt (+ output-language rule) + JSON output schema
 │   ├── messages.py      # User-facing error messages in en / ru / kk
 │   ├── requirements.txt
@@ -235,7 +256,7 @@ RISK-analyzer/
 │       ├── i18n/        # translations.js (en / ru / kk) + I18nContext (t(), setLang)
 │       ├── theme/       # ThemeContext (light / dark)
 │       ├── lib/spans.js # locate flagged clauses for highlighting
-│       ├── components/  # Navbar, Hero, InputCard, LoadingState,
+│       ├── components/  # Navbar, Hero, InputCard, Compare, LoadingState,
 │       │                # Results, HighlightedText, FlagPanel,
 │       │                # SettingsModal, HowItWorksModal, …
 │       └── styles/      # global.css, Hero.css, Results.css
