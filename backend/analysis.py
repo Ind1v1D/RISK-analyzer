@@ -25,6 +25,12 @@ load_dotenv()  # reads backend/.env into the environment
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 MAX_FLAGS = 20      # hard cap regardless of what the model returns
+# IMP-2 (stable results): the same contract must give the same risk levels, so
+# sampling randomness is removed (temperature 0 + fixed seed) and the output
+# order is deterministic (see _postprocess).
+TEMPERATURE = 0.0
+SEED = int(os.getenv("GEMINI_SEED", "42"))
+RISK_ORDER = {"High": 0, "Medium": 1, "Low": 2}
 MAX_ATTEMPTS = 4    # tries per model for transient errors (2s, 4s, 8s backoff)
 
 # Temporary problems — worth retrying the same model.
@@ -73,7 +79,7 @@ def analyze_contract(full_text: str, lang: str = "en") -> list[ClauseFlag]:
         raise AnalysisError(message) from exc
 
     result = _parse(response, lang)
-    return _postprocess(result.flags)
+    return _postprocess(result.flags, full_text)
 
 
 def _matches(exc: Exception, markers: tuple[str, ...]) -> bool:
@@ -99,7 +105,8 @@ def _generate(client, model: str, full_text: str, lang: str = "en"):
                     # on the model cooperating with free-form instructions.
                     response_mime_type="application/json",
                     response_schema=AnalysisResult,
-                    temperature=0.2,
+                    temperature=TEMPERATURE,
+                    seed=SEED,
                 ),
             )
             return response, None
@@ -159,16 +166,43 @@ def _parse(response, lang: str = "en") -> AnalysisResult:
         raise AnalysisError(msg("ai_unreadable", lang)) from exc
 
 
-def _postprocess(flags: list[ClauseFlag]) -> list[ClauseFlag]:
-    """Cap the list and drop duplicates / empty excerpts defensively."""
-    seen: set[str] = set()
-    clean: list[ClauseFlag] = []
+def _norm(text: str) -> str:
+    """Whitespace/case-insensitive form used for matching excerpts."""
+    return " ".join(text.split()).lower()
+
+
+def _postprocess(flags: list[ClauseFlag], full_text: str = "") -> list[ClauseFlag]:
+    """Drop duplicates / empty excerpts, order deterministically, then cap.
+
+    - Duplicates (same excerpt ignoring case/spacing): keep the most serious one;
+      ties are broken by the text itself, never by the order the model listed them.
+    - Order = High, Medium, Low; within a level, by position in the contract.
+    - The cap keeps the most serious flags rather than the first ones listed.
+    So the same set of model findings always produces the same result.
+    """
+    def severity(flag: ClauseFlag) -> int:
+        return RISK_ORDER.get(flag.risk_level, len(RISK_ORDER))
+
+    best: dict[str, ClauseFlag] = {}
     for flag in flags:
-        excerpt = " ".join(flag.clause_text.split()).lower()
-        if not excerpt or excerpt in seen:
+        excerpt = _norm(flag.clause_text)
+        if not excerpt:
             continue
-        seen.add(excerpt)
-        clean.append(flag)
-        if len(clean) >= MAX_FLAGS:
-            break
-    return clean
+        rank = (severity(flag), flag.clause_text, flag.explanation)
+        current = best.get(excerpt)
+        if current is None or rank < (severity(current), current.clause_text, current.explanation):
+            best[excerpt] = flag
+
+    haystack = _norm(full_text)
+
+    def sort_key(item: tuple[str, ClauseFlag]):
+        excerpt, flag = item
+        position = haystack.find(excerpt)
+        return (
+            severity(flag),
+            position if position >= 0 else len(haystack),  # unmatched excerpts last
+            excerpt,
+        )
+
+    ordered = [flag for _, flag in sorted(best.items(), key=sort_key)]
+    return ordered[:MAX_FLAGS]

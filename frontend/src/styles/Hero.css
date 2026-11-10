@@ -175,6 +175,15 @@
   cursor: not-allowed;
 }
 
+/* IMP-1: one-line privacy notice + disclaimer under the input box */
+.input-note {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
 .input-card__error {
   margin: 12px 0 0;
   color: var(--risk-high-fg);

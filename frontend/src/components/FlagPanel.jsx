@@ -1,4 +1,8 @@
+import { useState } from 'react'
 import { useI18n } from '../i18n/I18nContext.jsx'
+
+// Quotes longer than this don't fit the two-line preview, so they get a toggle.
+const PREVIEW_CHARS = 90
 
 /**
  * Side panel listing every flag: risk badge, the flagged excerpt (truncated),
@@ -7,6 +11,16 @@ import { useI18n } from '../i18n/I18nContext.jsx'
  */
 export default function FlagPanel({ flags, activeIndex, onSelect, unmatchedCount }) {
   const { t } = useI18n()
+  const [expanded, setExpanded] = useState(() => new Set()) // IMP-3: open cards
+
+  const toggleFull = (i) =>
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(i)) next.delete(i)
+      else next.add(i)
+      return next
+    })
+
   if (flags.length === 0) {
     return (
       <aside className="flag-panel">
@@ -38,7 +52,21 @@ export default function FlagPanel({ flags, activeIndex, onSelect, unmatchedCount
             </span>
             <span className="flag-item__num">#{i + 1}</span>
           </div>
-          <p className="flag-item__quote">“{flag.clause_text}”</p>
+          <p className={`flag-item__quote${expanded.has(i) ? ' flag-item__quote--full' : ''}`}>
+            “{flag.clause_text}”
+          </p>
+          {flag.clause_text.length > PREVIEW_CHARS && (
+            <button
+              className="flag-item__toggle"
+              aria-expanded={expanded.has(i)}
+              onClick={(e) => {
+                e.stopPropagation() // don't also select the card / scroll the document
+                toggleFull(i)
+              }}
+            >
+              {expanded.has(i) ? t('panel.hideFull') : t('panel.showFull')}
+            </button>
+          )}
           <p className="flag-item__why">{flag.explanation}</p>
         </div>
       ))}

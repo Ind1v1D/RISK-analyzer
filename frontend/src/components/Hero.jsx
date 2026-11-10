@@ -24,7 +24,11 @@ export default function Hero({ loading, error, onRun, onExample, onHowItWorks })
       {loading ? (
         <LoadingState />
       ) : (
-        <InputCard onSubmit={onRun} />
+        <>
+          <InputCard onSubmit={onRun} />
+          {/* IMP-1: privacy notice + disclaimer, visible before any upload */}
+          <p className="input-note">{t('input.privacyNote')}</p>
+        </>
       )}
 
       {!loading && (

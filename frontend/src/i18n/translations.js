@@ -40,6 +40,7 @@ const en = {
   'input.dropTitle': 'Drag & drop your contract here',
   'input.dropSub': 'or click to browse — PDF, DOCX, or TXT',
   'input.removeFile': 'Remove file',
+  'input.privacyNote': 'Your file is deleted after the analysis. Not legal advice.',
   'input.submit': 'Analyze contract',
   'input.errUnsupported': 'Unsupported file — please use a PDF, DOCX, or TXT file.',
   'input.errTooLarge': 'That file is over 10 MB — please upload a smaller one.',
@@ -59,6 +60,8 @@ const en = {
 
   'panel.title': { one: '{count} clause flagged', other: '{count} clauses flagged' },
   'panel.notice': 'AI-generated starting points — not legal advice.',
+  'panel.showFull': 'Show full clause',
+  'panel.hideFull': 'Hide full clause',
   'panel.emptyTitle': 'No obvious red flags found.',
   'panel.emptyBody':
     'The AI didn’t flag anything that clearly needs attention — but it can miss things. Consider having a licensed attorney review the document before you sign.',
@@ -122,6 +125,7 @@ const ru = {
   'input.dropTitle': 'Перетащите договор сюда',
   'input.dropSub': 'или нажмите, чтобы выбрать файл — PDF, DOCX или TXT',
   'input.removeFile': 'Удалить файл',
+  'input.privacyNote': 'Ваш файл удаляется после анализа. Это не юридическая консультация.',
   'input.submit': 'Проанализировать договор',
   'input.errUnsupported': 'Неподдерживаемый файл — используйте PDF, DOCX или TXT.',
   'input.errTooLarge': 'Файл больше 10 МБ — загрузите файл поменьше.',
@@ -146,6 +150,8 @@ const ru = {
     other: 'Отмечено {count} пункта',
   },
   'panel.notice': 'Отправные точки, подготовленные ИИ, — не юридическая консультация.',
+  'panel.showFull': 'Показать пункт целиком',
+  'panel.hideFull': 'Скрыть пункт',
   'panel.emptyTitle': 'Явных рисков не найдено.',
   'panel.emptyBody':
     'ИИ не отметил ничего, что явно требует внимания, но он может что-то упустить. Перед подписанием стоит показать документ лицензированному юристу.',
@@ -211,6 +217,7 @@ const kk = {
   'input.dropTitle': 'Шартты осы жерге сүйреп әкелңіз',
   'input.dropSub': 'немесе файлды таңдау үшін басыңыз — PDF, DOCX немесе TXT',
   'input.removeFile': 'Файлды жою',
+  'input.privacyNote': 'Файлыңыз талдаудан кейін жойылады. Бұл заңгерлік кеңес емес.',
   'input.submit': 'Шартты талдау',
   'input.errUnsupported': 'Қолдау көрсетілмейтін файл — PDF, DOCX немесе TXT пайдаланыңыз.',
   'input.errTooLarge': 'Файл 10 МБ-тан үлкен — кішірек файл жүктеңіз.',
@@ -230,6 +237,8 @@ const kk = {
 
   'panel.title': { one: '{count} тармақ белгіленді', other: '{count} тармақ белгіленді' },
   'panel.notice': 'ЖИ дайындаған бастапқы белгілер — заңгерлік кеңес емес.',
+  'panel.showFull': 'Тармақты толық көрсету',
+  'panel.hideFull': 'Тармақты жасыру',
   'panel.emptyTitle': 'Айқын тәуекелдер табылмады.',
   'panel.emptyBody':
     'ЖИ назар аударуды қажет ететін ештеңе белгілеген жоқ, бірақ ол бірдеңені көзден таса қалдыруы мүмкін. Қол қоймас бұрын құжатты лицензиясы бар заңгерге көрсеткен жөн.',
