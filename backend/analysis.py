@@ -10,21 +10,26 @@ another text model this API key can use and fall back to it once.
 """
 
 import json
+import logging
 import os
 import time
 
+import httpx
 from dotenv import load_dotenv
 from google import genai
+from google.genai import errors as genai_errors
 from google.genai import types
 from pydantic import ValidationError
 
 from messages import msg
-from prompts import AnalysisResult, ClauseFlag, build_system_prompt
+from prompts import MAX_FLAGS, AnalysisResult, ClauseFlag, ContractSummary, build_system_prompt
 
 load_dotenv()  # reads backend/.env into the environment
 
+logger = logging.getLogger("clausecheck.analysis")
+
 MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
-MAX_FLAGS = 20      # hard cap regardless of what the model returns
+MAX_KEY_TERMS = 6
 # IMP-2 (stable results): the same contract must give the same risk levels, so
 # sampling randomness is removed (temperature 0 + fixed seed) and the output
 # order is deterministic (see _postprocess).
@@ -32,69 +37,127 @@ TEMPERATURE = 0.0
 SEED = int(os.getenv("GEMINI_SEED", "42"))
 RISK_ORDER = {"High": 0, "Medium": 1, "Low": 2}
 MAX_ATTEMPTS = 4    # tries per model for transient errors (2s, 4s, 8s backoff)
+# Time budget. The frontend gives up after 150 s; queue wait (<= QUEUE_TIMEOUT,
+# 30 s default) + this deadline must stay below that.
+GEMINI_TIMEOUT_SECONDS = float(os.getenv("GEMINI_TIMEOUT_SECONDS", "60"))  # one HTTP call
+ANALYSIS_DEADLINE_SECONDS = float(os.getenv("ANALYSIS_DEADLINE_SECONDS", "110"))  # all attempts
+MIN_ATTEMPT_SECONDS = 10  # don't start a call that can't plausibly finish
+QUOTA_RETRY_AFTER = 60  # seconds suggested to the client when Gemini quota is out
 
-# Temporary problems — worth retrying the same model.
-TRANSIENT_MARKERS = (
-    "503", "429", "500",
-    "UNAVAILABLE", "RESOURCE_EXHAUSTED", "DEADLINE_EXCEEDED",
-)
-# Problems where switching models may help (retired/renamed model = 404).
-FALLBACK_MARKERS = TRANSIENT_MARKERS + ("404", "NOT_FOUND")
+# HTTP status codes from the Gemini API.
+QUOTA_CODES = {429}
+TRANSIENT_CODES = {408, 429, 500, 502, 503, 504}
+FALLBACK_CODES = TRANSIENT_CODES | {404}
+# Fallback only for errors that are NOT APIError (network/timeouts), where no
+# structured status exists.
+_NETWORK_MARKERS = ("UNAVAILABLE", "DEADLINE_EXCEEDED", "timed out", "timeout", "connection")
+
+# Model-name fragments we never pick as an automatic fallback.
+_UNSTABLE_FRAGMENTS = ("preview", "exp", "tts", "image", "live", "embedding")
 
 
 class AnalysisError(Exception):
     """Raised when the LLM call or its output can't be used; message is user-safe.
 
-    Built from a message `key` so it is already in the user's language.
+    Already translated. `status` is the HTTP status the API should answer with
+    (502 AI failure, 429 AI quota); `retry_after` (seconds) is sent as a header.
     """
 
+    def __init__(self, message: str, status: int = 502, retry_after: int | None = None):
+        super().__init__(message)
+        self.status = status
+        self.retry_after = retry_after
 
-def analyze_contract(full_text: str, lang: str = "en") -> list[ClauseFlag]:
-    """Return validated clause flags; explanations/errors are in `lang` (en/ru/kk)."""
+
+def analyze_contract(full_text: str, lang: str = "en") -> tuple[ContractSummary, list[ClauseFlag]]:
+    """Return (summary, validated flags); texts/errors are in `lang` (en/ru/kk)."""
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise AnalysisError(msg("missing_api_key", lang))
+        logger.error("GEMINI_API_KEY is not set: add it to backend/.env or the host's environment")
+        raise AnalysisError(msg("missing_api_key", lang), status=503)
 
-    client = genai.Client(api_key=api_key)
+    client = genai.Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(timeout=int(GEMINI_TIMEOUT_SECONDS * 1000)),  # ms
+    )
+    deadline = time.monotonic() + ANALYSIS_DEADLINE_SECONDS
 
-    response, last_exc = _generate(client, MODEL, full_text, lang)
+    response, last_exc = _generate(client, MODEL, full_text, lang, deadline)
 
     # Primary model still unavailable? Try one fallback model (e.g. a -lite
     # variant under lighter demand) before giving up.
-    if response is None and last_exc is not None and _matches(last_exc, FALLBACK_MARKERS):
+    if response is None and last_exc is not None and _is_fallback_worthy(last_exc):
         fallback = _pick_fallback_model(client)
         if fallback:
-            print(f"[analysis] {MODEL} unavailable; retrying with fallback: {fallback}", flush=True)
-            response, last_exc = _generate(client, fallback, full_text, lang)
+            logger.warning("%s unavailable; retrying with fallback: %s", MODEL, fallback)
+            response, last_exc = _generate(client, fallback, full_text, lang, deadline)
 
     if response is None:
-        exc = last_exc
-        detail = str(exc).strip().replace("\n", " ")[:300]
-        error = exc.__class__.__name__
-        message = (
-            msg("ai_failed_detail", lang, error=error, detail=detail)
-            if detail
-            else msg("ai_failed", lang, error=error)
-        )
-        raise AnalysisError(message) from exc
+        # Details go to the server log only; users get a generic translated text.
+        logger.error("Gemini request failed: %s: %s", last_exc.__class__.__name__, last_exc)
+        if last_exc is not None and _is_quota(last_exc):
+            raise AnalysisError(
+                msg("ai_quota", lang), status=429, retry_after=QUOTA_RETRY_AFTER
+            ) from last_exc
+        raise AnalysisError(msg("ai_failed", lang), status=502) from last_exc
 
     result = _parse(response, lang)
-    return _postprocess(result.flags, full_text)
+    return _clean_summary(result.summary), _postprocess(result.flags, full_text)
 
 
-def _matches(exc: Exception, markers: tuple[str, ...]) -> bool:
-    """Heuristic: does the error text indicate one of our known conditions?"""
-    message = str(exc)
-    return any(marker in message for marker in markers)
+def _status_code(exc: Exception) -> int | None:
+    """Structured HTTP status of a Gemini SDK error, if it has one."""
+    if isinstance(exc, genai_errors.APIError):
+        code = getattr(exc, "code", None)
+        return code if isinstance(code, int) else None
+    return None
 
 
-def _generate(client, model: str, full_text: str, lang: str = "en"):
+def _is_quota(exc: Exception) -> bool:
+    if isinstance(exc, genai_errors.APIError):
+        return _status_code(exc) in QUOTA_CODES or getattr(exc, "status", None) == "RESOURCE_EXHAUSTED"
+    return False
+
+
+def _is_transient(exc: Exception) -> bool:
+    """Temporary problem worth retrying the same model."""
+    if isinstance(exc, genai_errors.APIError):
+        return _status_code(exc) in TRANSIENT_CODES or getattr(exc, "status", None) in (
+            "UNAVAILABLE", "RESOURCE_EXHAUSTED", "DEADLINE_EXCEEDED", "INTERNAL",
+        )
+    # Not an SDK error: network/timeout failures. Structured types first,
+    # then a conservative text fallback.
+    if isinstance(exc, (httpx.TransportError, TimeoutError, ConnectionError)):
+        return True
+    text = str(exc)
+    return any(marker.lower() in text.lower() for marker in _NETWORK_MARKERS)
+
+
+def _is_fallback_worthy(exc: Exception) -> bool:
+    """Switching model may help: transient, or the model is gone (404)."""
+    if isinstance(exc, genai_errors.APIError):
+        return _status_code(exc) in FALLBACK_CODES or _is_transient(exc) or (
+            getattr(exc, "status", None) == "NOT_FOUND"
+        )
+    return _is_transient(exc)
+
+
+def _generate(client, model: str, full_text: str, lang: str = "en", deadline: float | None = None):
     """Call Gemini once per attempt; returns (response | None, error | None).
 
-    Retries only transient errors — auth failures and bad requests fail fast.
+    Retries only transient errors (2s/4s/8s backoff) and stops when `deadline`
+    (time.monotonic value) leaves no room for another attempt. Quota errors
+    (429) are NOT retried here: they return at once so the caller can try the
+    fallback model a single time and then report "quota reached".
     """
     last_exc: Exception | None = None
     for attempt in range(MAX_ATTEMPTS):
+        remaining = None if deadline is None else deadline - time.monotonic()
+        if remaining is not None and remaining < MIN_ATTEMPT_SECONDS:
+            break
+        call_timeout = GEMINI_TIMEOUT_SECONDS
+        if remaining is not None:
+            call_timeout = min(call_timeout, remaining)
         try:
             response = client.models.generate_content(
                 model=model,
@@ -107,15 +170,21 @@ def _generate(client, model: str, full_text: str, lang: str = "en"):
                     response_schema=AnalysisResult,
                     temperature=TEMPERATURE,
                     seed=SEED,
+                    http_options=types.HttpOptions(timeout=int(call_timeout * 1000)),
                 ),
             )
             return response, None
         except Exception as exc:
             last_exc = exc
-            if not _matches(exc, TRANSIENT_MARKERS):
+            if _is_quota(exc):
+                return None, exc  # quota: no backoff retries on the same model
+            if not _is_transient(exc):
                 return None, exc  # permanent error — don't waste retries
             if attempt < MAX_ATTEMPTS - 1:
-                time.sleep(2 ** (attempt + 1))  # 2s, 4s, 8s
+                delay = 2 ** (attempt + 1)
+                if deadline is not None and deadline - time.monotonic() < delay + MIN_ATTEMPT_SECONDS:
+                    break  # next attempt would not fit in the budget
+                time.sleep(delay)
     return None, last_exc
 
 
@@ -130,14 +199,18 @@ def _pick_fallback_model(client) -> str | None:
     except Exception:
         return None
 
-    names = []
+    names = set()
     for entry in entries:
         name = (getattr(entry, "name", "") or "").removeprefix("models/")
         actions = getattr(entry, "supported_actions", None)
         if actions and "generateContent" not in actions:
             continue  # skip embeddings/image/etc. when metadata is available
-        if name and name != MODEL:
-            names.append(name)
+        if not name or name == MODEL:
+            continue
+        if any(fragment in name.lower() for fragment in _UNSTABLE_FRAGMENTS):
+            continue  # never fall back to preview/experimental/special models
+        names.add(name)
+    names = sorted(names)  # deterministic order
 
     version = MODEL[: MODEL.find("-flash")] if "-flash" in MODEL else "gemini"
     same_version = [n for n in names if n.startswith(version)]
@@ -206,3 +279,13 @@ def _postprocess(flags: list[ClauseFlag], full_text: str = "") -> list[ClauseFla
 
     ordered = [flag for _, flag in sorted(best.items(), key=sort_key)]
     return ordered[:MAX_FLAGS]
+
+
+def _clean_summary(summary: ContractSummary) -> ContractSummary:
+    """Trim whitespace, drop empty entries, cap key_terms."""
+    return ContractSummary(
+        contract_type=summary.contract_type.strip(),
+        parties=[p.strip() for p in summary.parties if p.strip()],
+        overview=summary.overview.strip(),
+        key_terms=[t.strip() for t in summary.key_terms if t.strip()][:MAX_KEY_TERMS],
+    )

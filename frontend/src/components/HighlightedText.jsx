@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-import { locateFlags } from '../lib/spans.js'
 import { useI18n } from '../i18n/I18nContext.jsx'
 
 /**
@@ -7,9 +5,8 @@ import { useI18n } from '../i18n/I18nContext.jsx'
  * each flagged clause (step 5 of the pipeline). Clicking a highlight selects
  * the matching flag in the side panel.
  */
-export default function HighlightedText({ fullText, flags, activeIndex, onSelect }) {
+export default function HighlightedText({ fullText, spans, activeIndex, onSelect }) {
   const { t } = useI18n()
-  const spans = useMemo(() => locateFlags(fullText, flags), [fullText, flags])
 
   const nodes = []
   let cursor = 0

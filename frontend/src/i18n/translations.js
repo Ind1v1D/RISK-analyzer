@@ -84,7 +84,7 @@ const en = {
     'Gemini reviews the contract for clauses that are risky, unclear, or unusually unfavorable, and classifies each by risk level.',
   'how.step3.title': 'Review the flags.',
   'how.step3.body':
-    'See highlighted text plus plain-language explanations, then talk to a licensed attorney about what matters for your situation.',
+    'See a contract summary, highlighted text and plain-language explanations, then download a PDF report and talk to a licensed attorney about what matters for your situation.',
   'how.note':
     'ClauseCheck is a first-pass issue-spotting aid — not legal advice, and not a substitute for a lawyer.',
   'how.close': 'Got it',
@@ -101,6 +101,21 @@ const en = {
   'errors.generic': 'Something went wrong while analyzing the contract.',
   'errors.network':
     'Couldn’t reach the server. Make sure the backend is running and try again.',
+
+  'results.download': 'Download PDF report',
+  'results.banner.title': 'AI-generated analysis.',
+  'results.banner.body': 'It may miss issues or be wrong, and it is not legal advice. Confirm with a licensed lawyer before signing.',
+  'summary.title': 'Contract summary',
+  'summary.type': 'Contract type',
+  'summary.parties': 'Parties',
+  'summary.overview': 'Overview',
+  'summary.keyTerms': 'Key terms',
+  'print.title': 'ClauseCheck report',
+  'print.generated': 'Generated: {date}',
+  'print.document': 'Document: {name}',
+  'print.pasted': 'Pasted text',
+  'errors.timeout': 'The analysis took too long and was stopped. Please try again, or try a shorter document.',
+  'errors.retryAfter': 'Try again in {count} s.',
 }
 
 const ru = {
@@ -176,7 +191,7 @@ const ru = {
     'Gemini проверяет договор на рискованные, неясные или необычно невыгодные пункты и определяет уровень риска для каждого.',
   'how.step3.title': 'Изучите отметки.',
   'how.step3.body':
-    'Просмотрите выделенный текст и пояснения простым языком, а затем обсудите с лицензированным юристом то, что важно именно в вашей ситуации.',
+    'Изучите краткое содержание договора, выделенный текст и пояснения простым языком, скачайте PDF-отчёт и обсудите с лицензированным юристом то, что важно именно в вашей ситуации.',
   'how.note':
     'ClauseCheck помогает лишь первично выявить проблемные места — это не юридическая консультация и не замена юристу.',
   'how.close': 'Понятно',
@@ -193,6 +208,21 @@ const ru = {
   'errors.generic': 'Что-то пошло не так при анализе договора.',
   'errors.network':
     'Не удалось связаться с сервером. Убедитесь, что бэкенд запущен, и повторите попытку.',
+
+  'results.download': 'Скачать PDF-отчёт',
+  'results.banner.title': 'Анализ создан ИИ.',
+  'results.banner.body': 'Он может упустить проблемы или ошибаться и не является юридической консультацией. Перед подписанием проконсультируйтесь с лицензированным юристом.',
+  'summary.title': 'Краткое содержание договора',
+  'summary.type': 'Тип договора',
+  'summary.parties': 'Стороны',
+  'summary.overview': 'Суть договора',
+  'summary.keyTerms': 'Ключевые условия',
+  'print.title': 'Отчёт ClauseCheck',
+  'print.generated': 'Создан: {date}',
+  'print.document': 'Документ: {name}',
+  'print.pasted': 'Вставленный текст',
+  'errors.timeout': 'Анализ занял слишком много времени и был остановлен. Повторите попытку или загрузите документ покороче.',
+  'errors.retryAfter': 'Повторите через {count} с.',
 }
 
 const kk = {
@@ -261,7 +291,7 @@ const kk = {
     'Gemini шартты тәуекелді, түсініксіз немесе әдеттен тыс тиімсіз тармақтарға тексеріп, әрқайсысына тәуекел деңгейін береді.',
   'how.step3.title': 'Белгілерді қарап шығыңыз.',
   'how.step3.body':
-    'Ерекшеленген мәтін мен жеңіл тілмен жазылған түсіндірмелерді қарап шығыңыз, содан кейін өз жағдайыңызға қатысты маңызды мәселелерді лицензиясы бар заңгермен талқылаңыз.',
+    'Шарттың қысқаша мазмұнын, ерекшеленген мәтін мен жеңіл тілмен жазылған түсіндірмелерді қарап шығыңыз, PDF-есепті жүктеп алыңыз да, өз жағдайыңызға қатысты маңызды мәселелерді лицензиясы бар заңгермен талқылаңыз.',
   'how.note':
     'ClauseCheck — мәселелерді алдын ала анықтауға арналған құрал. Бұл заңгерлік кеңес емес және заңгердің орнын баспайды.',
   'how.close': 'Түсінікті',
@@ -278,6 +308,21 @@ const kk = {
   'errors.generic': 'Шартты талдау кезінде бірдеңе дұрыс болмады.',
   'errors.network':
     'Серверге қосыла алмадық. Бэкенд іске қосылғанын тексеріп, қайталап көріңіз.',
+
+  'results.download': 'PDF-есепті жүктеп алу',
+  'results.banner.title': 'Талдауды жасанды интеллект жасады.',
+  'results.banner.body': 'Ол кейбір мәселелерді байқамай қалуы немесе қателесуі мүмкін және заңгерлік кеңес болып табылмайды. Қол қоймас бұрын лицензиясы бар заңгермен кеңесіңіз.',
+  'summary.title': 'Шарттың қысқаша мазмұны',
+  'summary.type': 'Шарт түрі',
+  'summary.parties': 'Тараптар',
+  'summary.overview': 'Шолу',
+  'summary.keyTerms': 'Негізгі талаптар',
+  'print.title': 'ClauseCheck есебі',
+  'print.generated': 'Жасалған уақыты: {date}',
+  'print.document': 'Құжат: {name}',
+  'print.pasted': 'Қойылған мәтін',
+  'errors.timeout': 'Талдау тым ұзаққа созылып, тоқтатылды. Қайталап көріңіз немесе қысқарақ құжатты жүктеңіз.',
+  'errors.retryAfter': '{count} секундтан кейін қайталап көріңіз.',
 }
 
 export const translations = { en, ru, kk }

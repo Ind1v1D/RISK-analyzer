@@ -76,22 +76,39 @@ MESSAGES: dict[str, dict[str, str]] = {
     },
     # ---- analysis.py -----------------------------------------------------
     "missing_api_key": {
-        "en": "The server is missing GEMINI_API_KEY. Add it to backend/.env "
-        "(see README setup steps) and restart the server.",
-        "ru": "На сервере не задан GEMINI_API_KEY. Добавьте его в backend/.env "
-        "(см. шаги установки в README) и перезапустите сервер.",
-        "kk": "Серверде GEMINI_API_KEY жоқ. Оны backend/.env файлына қосыңыз "
-        "(README-дегі орнату қадамдарын қараңыз) және серверді қайта іске қосыңыз.",
-    },
-    "ai_failed_detail": {
-        "en": "The AI request failed ({error}): {detail}",
-        "ru": "Запрос к ИИ не выполнен ({error}): {detail}",
-        "kk": "ЖИ сұрауы орындалмады ({error}): {detail}",
+        "en": "The analysis service is not configured yet. Please try again later.",
+        "ru": "Сервис анализа ещё не настроен. Повторите попытку позже.",
+        "kk": "Талдау қызметі әлі бапталмаған. Кейінірек қайталап көріңіз.",
     },
     "ai_failed": {
-        "en": "The AI request failed ({error}) after several attempts. Please try again.",
-        "ru": "Запрос к ИИ не выполнен ({error}) после нескольких попыток. Повторите попытку.",
-        "kk": "ЖИ сұрауы бірнеше әрекеттен кейін орындалмады ({error}). Қайталап көріңіз.",
+        "en": "The AI service couldn't process this document right now. Please try again in a few minutes.",
+        "ru": "Сервис ИИ сейчас не смог обработать документ. Повторите попытку через несколько минут.",
+        "kk": "ЖИ қызметі қазір бұл құжатты өңдей алмады. Бірнеше минуттан кейін қайталап көріңіз.",
+    },
+    "ai_quota": {
+        "en": "The AI service has reached its usage quota. Please try again later.",
+        "ru": "Достигнут лимит запросов к сервису ИИ. Повторите попытку позже.",
+        "kk": "ЖИ қызметінің сұрау лимиті таусылды. Кейінірек қайталап көріңіз.",
+    },
+    "rate_limited": {
+        "en": "You're sending requests too quickly. Please wait a moment and try again.",
+        "ru": "Слишком много запросов. Немного подождите и повторите попытку.",
+        "kk": "Сұраулар тым жиі. Біраз күтіп, қайталап көріңіз.",
+    },
+    "server_busy": {
+        "en": "The server is busy analyzing other documents. Please try again in a minute.",
+        "ru": "Сервер занят анализом других документов. Повторите попытку через минуту.",
+        "kk": "Сервер қазір басқа құжаттарды талдаумен бос емес. Бір минуттан кейін қайталап көріңіз.",
+    },
+    "text_too_short": {
+        "en": "That text is too short to analyze — please paste the full contract.",
+        "ru": "Текст слишком короткий для анализа — вставьте договор целиком.",
+        "kk": "Мәтін талдау үшін тым қысқа — шарттың толық мәтінін қойыңыз.",
+    },
+    "pdf_encrypted": {
+        "en": "That PDF is password-protected. Remove the password and upload it again, or paste the text instead.",
+        "ru": "Этот PDF защищён паролем. Снимите защиту и загрузите файл снова или вставьте текст вручную.",
+        "kk": "Бұл PDF құпиясөзбен қорғалған. Құпиясөзді алып тастап, қайта жүктеңіз немесе мәтінді қолмен қойыңыз.",
     },
     "ai_empty": {
         "en": "The AI returned an empty response. Please try again.",

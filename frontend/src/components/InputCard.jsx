@@ -11,11 +11,14 @@ const MAX_BYTES = 10 * 1024 * 1024 // matches the backend limit
  *   upload -> drag-and-drop zone + file picker
  * A circular accent submit button is docked to the card's bottom-right corner.
  */
-export default function InputCard({ onSubmit }) {
+export default function InputCard({ input, onInputChange, onSubmit }) {
   const { t } = useI18n()
-  const [mode, setMode] = useState('paste') // 'paste' | 'upload'
-  const [text, setText] = useState('')
-  const [file, setFile] = useState(null)
+  // mode / text / file are owned by App so they survive loading and errors.
+  const { mode, text, file } = input
+  const update = (patch) => onInputChange({ ...input, ...patch })
+  const setMode = (m) => update({ mode: m })
+  const setText = (v) => update({ text: v })
+  const setFile = (f) => update({ file: f })
   const [dragOver, setDragOver] = useState(false)
   const [localError, setLocalError] = useState('')
   const fileInput = useRef(null)

@@ -1,0 +1,121 @@
+/* Print-only report (see PrintReport.jsx). Always a light, ink-friendly palette. */
+
+.print-report {
+  display: none;
+}
+
+@page {
+  size: A4;
+  margin: 18mm 16mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* Hide the whole interactive app, show only the report. */
+  .app {
+    display: none !important;
+  }
+
+  .print-report {
+    display: block;
+    font-family: Inter, 'Segoe UI', Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #111;
+    background: #fff;
+  }
+
+  .print-report h1 {
+    font-size: 20pt;
+    margin: 0 0 4pt;
+  }
+
+  .print-report h2 {
+    font-size: 14pt;
+    margin: 16pt 0 6pt;
+    break-after: avoid;
+  }
+
+  .print-report h3 {
+    font-size: 11.5pt;
+    margin: 0 0 4pt;
+  }
+
+  .print-report p {
+    margin: 0 0 6pt;
+  }
+
+  .pr-header {
+    border-bottom: 1.5pt solid #111;
+    padding-bottom: 8pt;
+    margin-bottom: 10pt;
+  }
+
+  .pr-header p {
+    margin: 0;
+    color: #444;
+    font-size: 10pt;
+  }
+
+  .pr-disclaimer,
+  .pr-footer {
+    border: 1pt solid #888;
+    background: #f3f3f3;
+    padding: 6pt 9pt;
+    font-size: 9.5pt;
+    break-inside: avoid;
+  }
+
+  .pr-footer {
+    margin-top: 16pt;
+  }
+
+  .pr-counts {
+    margin-top: 10pt;
+    font-weight: 600;
+  }
+
+  .pr-summary ul {
+    margin: 0 0 6pt;
+    padding-left: 18pt;
+  }
+
+  .pr-flag {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1pt solid #bbb;
+    border-left-width: 4pt;
+    padding: 7pt 10pt;
+    margin: 0 0 9pt;
+  }
+
+  .pr-flag--high {
+    border-left-color: #b91c1c;
+  }
+
+  .pr-flag--medium {
+    border-left-color: #b45309;
+  }
+
+  .pr-flag--low {
+    border-left-color: #15803d;
+  }
+
+  .pr-flag blockquote {
+    margin: 0 0 5pt;
+    padding-left: 8pt;
+    border-left: 1pt solid #999;
+    font-style: italic;
+    color: #333;
+    white-space: pre-wrap;
+  }
+
+  .pr-flag p {
+    margin: 0;
+  }
+}
